@@ -38,6 +38,10 @@ out/
 
 # Environment variables file
 .env
+.cnf
+
+# sql
+.sql
 
 # Docker
 docker-compose.yml
