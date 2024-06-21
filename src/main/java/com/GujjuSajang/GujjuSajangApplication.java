@@ -1,13 +1,13 @@
-package com.pyumpyum;
+package com.GujjuSajang;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PyumPyumApplication {
+public class GujjuSajangApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(PyumPyumApplication.class, args);
+        SpringApplication.run(GujjuSajangApplication.class, args);
     }
 
 }

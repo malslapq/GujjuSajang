@@ -1,10 +1,10 @@
-package com.pyumpyum;
+package com.GujjuSajang;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PyumPyumApplicationTests {
+class GujjuSajangApplicationTests {
 
     @Test
     void contextLoads() {

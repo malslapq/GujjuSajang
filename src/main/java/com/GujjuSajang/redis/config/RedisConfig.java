@@ -1,4 +1,4 @@
-package com.pyumpyum.config;
+package com.GujjuSajang.redis.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
