@@ -3,11 +3,10 @@ package com.GujjuSajang.filter;
 import com.GujjuSajang.Jwt.dto.TokenUserInfo;
 import com.GujjuSajang.Jwt.service.JwtService;
 import com.GujjuSajang.exception.TokenException;
-import jakarta.servlet.*;
 import jakarta.servlet.FilterConfig;
+import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jdk.swing.interop.SwingInterOpUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class JwtFilter implements Filter {
     private void authenticateToken(HttpServletRequest request, String token) {
         if (StringUtils.hasText(token)) {
             TokenUserInfo tokenUserInfo = jwtService.parseAccessToken(token);
-            request.setAttribute("loginUserInfo", tokenUserInfo);
+            request.setAttribute("tokenUserInfo", tokenUserInfo);
         }
     }
 
@@ -47,7 +46,6 @@ public class JwtFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        System.out.println(123123123);
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         try {

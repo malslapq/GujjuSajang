@@ -1,9 +1,12 @@
 package com.GujjuSajang.util.Mail;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
@@ -21,12 +24,13 @@ public class MailSender {
     @Value("${spring.mail.codeLength}")
     private int codeLength;
 
-    public String sendVerifiedMail(long id, String mail) {
+    public String sendVerifiedMail(long id, String mail) throws MessagingException {
         String code = getVerifiedCode(codeLength);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(mail);
-        message.setSubject(subject);
-        message.setText(content + id + "&code=" + code);
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setTo(mail);
+        helper.setSubject(subject);
+        helper.setText(content + id + "&code=" + code + "\">클릭</a>", true);
         javaMailSender.send(message);
         return code;
     }

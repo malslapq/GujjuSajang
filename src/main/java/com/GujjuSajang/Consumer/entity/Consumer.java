@@ -1,6 +1,6 @@
 package com.GujjuSajang.Consumer.entity;
 
-import com.GujjuSajang.Consumer.dto.ConsumerDetailDto;
+import com.GujjuSajang.Consumer.dto.ConsumerUpdateDetailDto;
 import com.GujjuSajang.util.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,8 +35,17 @@ public class Consumer extends BaseTimeEntity {
         this.mailVerified = verified;
     }
 
-    public static ConsumerDetailDto from(Consumer consumer) {
-        return ConsumerDetailDto.builder()
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
+    public void changeAddressAndPhone(String address, String phone) {
+        this.address = address;
+        this.phone = phone;
+    }
+
+    public static ConsumerUpdateDetailDto from(Consumer consumer) {
+        return ConsumerUpdateDetailDto.builder()
                 .id(consumer.getId())
                 .name(consumer.getName())
                 .mail(consumer.mail)
