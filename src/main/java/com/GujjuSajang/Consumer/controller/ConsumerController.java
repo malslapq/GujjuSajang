@@ -1,13 +1,15 @@
 package com.GujjuSajang.Consumer.controller;
 
 import com.GujjuSajang.Consumer.dto.ConsumerLoginDto;
-import com.GujjuSajang.Consumer.dto.ConsumerUpdateDetailDto;
 import com.GujjuSajang.Consumer.dto.ConsumerSignUpDto;
+import com.GujjuSajang.Consumer.dto.ConsumerUpdateDetailDto;
 import com.GujjuSajang.Consumer.dto.ConsumerUpdatePasswordDto;
 import com.GujjuSajang.Consumer.service.ConsumerService;
 import com.GujjuSajang.Jwt.dto.TokenInfo;
 import com.GujjuSajang.Jwt.dto.TokenUserInfo;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +24,18 @@ public class ConsumerController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<TokenInfo> signUp(@RequestBody @Valid ConsumerSignUpDto consumerSignUpDto) {
-        return ResponseEntity.ok().body(consumerService.signUp(consumerSignUpDto));
+    public ResponseEntity<TokenInfo> signUp(@RequestBody @Valid ConsumerSignUpDto consumerSignUpDto, HttpServletResponse response) {
+        TokenInfo tokenInfo = consumerService.signUp(consumerSignUpDto);
+        addCookie(response, tokenInfo);
+        return ResponseEntity.ok().body(tokenInfo);
     }
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<TokenInfo> login(@RequestBody @Valid ConsumerLoginDto consumerLoginDto) {
-        return ResponseEntity.ok().body(consumerService.login(consumerLoginDto));
+    public ResponseEntity<TokenInfo> login(@RequestBody @Valid ConsumerLoginDto consumerLoginDto, HttpServletResponse response) {
+        TokenInfo tokenInfo = consumerService.login(consumerLoginDto);
+        addCookie(response, tokenInfo);
+        return ResponseEntity.ok().body(tokenInfo);
     }
 
     // 로그아웃
@@ -64,6 +70,15 @@ public class ConsumerController {
     public ResponseEntity<ConsumerUpdatePasswordDto.Response> updatePassword(@PathVariable Long id, @RequestBody @Valid ConsumerUpdatePasswordDto consumerUpdatePasswordDto, HttpServletRequest request) {
         TokenUserInfo tokenUserInfo = (TokenUserInfo) request.getAttribute("tokenUserInfo");
         return ResponseEntity.ok().body(consumerService.updatePassword(id, tokenUserInfo.getId(), consumerUpdatePasswordDto));
+    }
+
+    private void addCookie(HttpServletResponse response, TokenInfo tokenInfo) {
+        Cookie cookie = new Cookie("accessToken", tokenInfo.getAccessToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60);
+        response.addCookie(cookie);
     }
 
 }
