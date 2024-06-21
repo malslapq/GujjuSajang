@@ -1,10 +1,10 @@
-package com.GujjuSajang.Jwt.config;
+package com.GujjuSajang.filter;
 
-import com.GujjuSajang.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @RequiredArgsConstructor
@@ -16,7 +16,7 @@ public class FilterConfig {
     public FilterRegistrationBean<JwtFilter> jwtFilterRegistration() {
         FilterRegistrationBean<JwtFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(jwtFilter);
-        registrationBean.addUrlPatterns("/consumer/*");
+        registrationBean.addUrlPatterns("/consumer/logout");
         return registrationBean;
     }
 

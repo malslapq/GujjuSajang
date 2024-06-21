@@ -12,7 +12,9 @@ public enum ErrorCode {
     UNSUPPORTED_TOKEN(HttpStatus.BAD_REQUEST, "지원하지 않는 토큰"),
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "토큰 형식이 잘못됨"),
     INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "서명이 유효하지 않음"),
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰");
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰"),
+    NOT_FOUND_CONSUMER(HttpStatus.BAD_REQUEST, "구매회원이 존재하지 않습니다."),
+    INVALID_CODE(HttpStatus.UNAUTHORIZED, "유효하지 않은 코드");
 
     private final HttpStatus httpStatus;
     private final String errorMessage;
