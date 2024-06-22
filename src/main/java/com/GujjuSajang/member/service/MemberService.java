@@ -3,8 +3,8 @@ package com.GujjuSajang.member.service;
 import com.GujjuSajang.Jwt.dto.TokenInfo;
 import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import com.GujjuSajang.Jwt.service.JwtService;
-import com.GujjuSajang.exception.ConsumerException;
 import com.GujjuSajang.exception.ErrorCode;
+import com.GujjuSajang.exception.MemberException;
 import com.GujjuSajang.member.dto.MemberLoginDto;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
@@ -36,7 +36,7 @@ public class MemberService {
 
     // 회원 가입
     @Transactional
-    public TokenInfo signUp(MemberSignUpDto memberSignUpDto) {
+    public void signUp(MemberSignUpDto memberSignUpDto) {
 
         String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
 
@@ -55,28 +55,28 @@ public class MemberService {
         try {
             mailVerifiedRepository.save(member.getId(), mailSender.sendVerifiedMail(member.getId(), member.getMail()));
         } catch (MessagingException e) {
-            throw new ConsumerException(ErrorCode.FAIL_SEND_MAIL);
+            throw new MemberException(ErrorCode.FAIL_SEND_MAIL);
         }
 
-        return jwtService.issueTokens(TokenMemberInfo.builder()
+        jwtService.issueTokens(TokenMemberInfo.builder()
                 .id(member.getId())
                 .mail(member.getMail())
                 .mailVerified(member.isMailVerified())
-                .build()
-        );
+                .build());
     }
 
     // 로그인
     public TokenInfo login(MemberLoginDto memberLoginDto) {
         Member member = memberRepository.findByMail(memberLoginDto.getMail()).orElseThrow(() ->
-                new ConsumerException(ErrorCode.NOT_FOUND_CONSUMER));
+                new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        System.out.println(member.getRole());
         passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword());
         matchPassword(memberLoginDto.getPassword(), member.getPassword());
         return jwtService.issueTokens(TokenMemberInfo.builder()
                 .id(member.getId())
                 .mail(member.getMail())
                 .mailVerified(member.isMailVerified())
-                .role(MemberRole.MEMBER)
+                .role(member.getRole())
                 .build()
         );
     }
@@ -89,8 +89,8 @@ public class MemberService {
     // 메일 인증
     @Transactional
     public void verifiedMail(long id, String code) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new ConsumerException(ErrorCode.NOT_FOUND_CONSUMER));
-        String getCode = mailVerifiedRepository.getCode(id).orElseThrow(() -> new ConsumerException(ErrorCode.INVALID_CODE));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        String getCode = mailVerifiedRepository.getCode(id).orElseThrow(() -> new MemberException(ErrorCode.INVALID_CODE));
         if (code.equals(getCode)) {
             member.changeMailVerified(true);
             mailVerifiedRepository.delete(id);
@@ -100,25 +100,25 @@ public class MemberService {
     // 회원 상세 조회
     @Transactional(readOnly = true)
     public MemberUpdateDetailDto getDetail(long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new ConsumerException(ErrorCode.NOT_FOUND_CONSUMER));
-        return Member.from(member);
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        return MemberUpdateDetailDto.from(member);
     }
 
     // 회원 정보 수정
     @Transactional
     public MemberUpdateDetailDto updateConsumer(Long id, Long tokenId, MemberUpdateDetailDto memberUpdateDetailDto) {
         verifyId(tokenId, id);
-        Member member = memberRepository.findById(id).orElseThrow(() -> new ConsumerException(ErrorCode.NOT_FOUND_CONSUMER));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
         matchPassword(memberUpdateDetailDto.getPassword(), member.getPassword());
         member.changeAddressAndPhone(memberUpdateDetailDto.getAddress(), memberUpdateDetailDto.getPhone());
-        return Member.from(member);
+        return MemberUpdateDetailDto.from(member);
     }
 
     // 비밀번호 변경
     @Transactional
     public MemberUpdatePasswordDto.Response updatePassword(Long id, Long tokenId, MemberUpdatePasswordDto memberUpdatePasswordDto) {
         verifyId(id, tokenId);
-        Member member = memberRepository.findById(id).orElseThrow(() -> new ConsumerException(ErrorCode.NOT_FOUND_CONSUMER));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
         matchPassword(memberUpdatePasswordDto.getCurPassword(), member.getPassword());
         member.changePassword(passwordEncoder.encode(memberUpdatePasswordDto.getNewPassword()));
         return MemberUpdatePasswordDto.Response.builder()
@@ -133,14 +133,14 @@ public class MemberService {
     // id 검증
     private void verifyId(Long tokenId, Long requestId) {
         if (!Objects.equals(tokenId, requestId)) {
-            throw new ConsumerException(ErrorCode.MISS_MATCH_CONSUMER);
+            throw new MemberException(ErrorCode.MISS_MATCH_CONSUMER);
         }
     }
 
     // 비밀번호 검증
     private void matchPassword(String requestPassword, String encodedPassword) {
         if (!passwordEncoder.matches(requestPassword, encodedPassword)) {
-            throw new ConsumerException(ErrorCode.MISS_MATCH_PASSWORD);
+            throw new MemberException(ErrorCode.MISS_MATCH_PASSWORD);
         }
     }
 

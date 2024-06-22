@@ -48,15 +48,5 @@ public class Member extends BaseTimeEntity {
         this.phone = phone;
     }
 
-    public static MemberUpdateDetailDto from(Member member) {
-        return MemberUpdateDetailDto.builder()
-                .id(member.getId())
-                .name(member.getName())
-                .mail(member.mail)
-                .phone(member.phone)
-                .address(member.address)
-                .build();
-    }
-
 }
 

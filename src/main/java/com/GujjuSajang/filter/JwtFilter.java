@@ -2,7 +2,7 @@ package com.GujjuSajang.filter;
 
 import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import com.GujjuSajang.Jwt.service.JwtService;
-import com.GujjuSajang.exception.ConsumerException;
+import com.GujjuSajang.exception.MemberException;
 import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.TokenException;
 import jakarta.servlet.FilterConfig;
@@ -45,7 +45,7 @@ public class JwtFilter implements Filter {
 
     private void mailVerify(boolean isMailVerified) {
         if (!isMailVerified) {
-            throw new ConsumerException(ErrorCode.MAIL_NOT_VERIFIED);
+            throw new MemberException(ErrorCode.MAIL_NOT_VERIFIED);
         }
     }
 

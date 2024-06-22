@@ -17,6 +17,7 @@ public class FilterConfig {
         registrationBean.setFilter(jwtFilter);
         registrationBean.addUrlPatterns("/member/logout");
         registrationBean.addUrlPatterns("/member/detail/*");
+        registrationBean.addUrlPatterns("/product", "/products","/product/*");
         return registrationBean;
     }
 

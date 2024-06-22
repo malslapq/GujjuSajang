@@ -24,7 +24,7 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody @Valid MemberSignUpDto memberSignUpDto, HttpServletResponse response) {
+    public ResponseEntity<?> signUp(@RequestBody @Valid MemberSignUpDto memberSignUpDto) {
         consumerService.signUp(memberSignUpDto);
         return ResponseEntity.ok().body("회원가입 성공");
     }
@@ -40,7 +40,7 @@ public class MemberController {
     // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
-        TokenMemberInfo tokenMemberInfo = (TokenMemberInfo) request.getAttribute("tokenUserInfo");
+        TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
         consumerService.logout(tokenMemberInfo.getId());
         return ResponseEntity.ok().body("로그아웃 성공");
     }
@@ -60,14 +60,14 @@ public class MemberController {
     // 정보 수정
     @PatchMapping("/detail/{id}")
     public ResponseEntity<MemberUpdateDetailDto> updateDetail(@PathVariable Long id, @RequestBody @Valid MemberUpdateDetailDto memberUpdateDetailDto, HttpServletRequest request) {
-        TokenMemberInfo tokenMemberInfo = (TokenMemberInfo) request.getAttribute("tokenUserInfo");
+        TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
         return ResponseEntity.ok().body(consumerService.updateConsumer(id, tokenMemberInfo.getId(), memberUpdateDetailDto));
     }
 
     // 비밀번호 수정
     @PatchMapping("/detail/{id}/password")
     public ResponseEntity<MemberUpdatePasswordDto.Response> updatePassword(@PathVariable Long id, @RequestBody @Valid MemberUpdatePasswordDto memberUpdatePasswordDto, HttpServletRequest request) {
-        TokenMemberInfo tokenMemberInfo = (TokenMemberInfo) request.getAttribute("tokenUserInfo");
+        TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
         return ResponseEntity.ok().body(consumerService.updatePassword(id, tokenMemberInfo.getId(), memberUpdatePasswordDto));
     }
 
@@ -78,6 +78,10 @@ public class MemberController {
         cookie.setPath("/");
         cookie.setMaxAge(60 * 60);
         response.addCookie(cookie);
+    }
+
+    private TokenMemberInfo getTokenMemberInfo(HttpServletRequest request) {
+        return (TokenMemberInfo) request.getAttribute("tokenUserInfo");
     }
 
 }

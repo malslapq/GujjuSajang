@@ -1,5 +1,6 @@
 package com.GujjuSajang.member.dto;
 
+import com.GujjuSajang.member.entity.Member;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -21,5 +22,15 @@ public class MemberUpdateDetailDto {
     private String phone;
     @NotBlank
     private String address;
+
+    public static MemberUpdateDetailDto from(Member member) {
+        return MemberUpdateDetailDto.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .mail(member.getMail())
+                .phone(member.getPhone())
+                .address(member.getAddress())
+                .build();
+    }
 
 }
