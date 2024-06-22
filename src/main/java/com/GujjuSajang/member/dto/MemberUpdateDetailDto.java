@@ -1,24 +1,21 @@
-package com.GujjuSajang.Consumer.dto;
+package com.GujjuSajang.member.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ConsumerSignUpDto {
+@Builder
+public class MemberUpdateDetailDto {
 
+    private Long id;
     @NotBlank
     private String name;
     @NotBlank
     private String password;
     @NotBlank
-    @Email
     private String mail;
     @NotBlank
     private String phone;

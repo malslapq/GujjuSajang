@@ -1,6 +1,7 @@
-package com.GujjuSajang.Consumer.entity;
+package com.GujjuSajang.member.entity;
 
-import com.GujjuSajang.Consumer.dto.ConsumerUpdateDetailDto;
+import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
+import com.GujjuSajang.member.type.MemberRole;
 import com.GujjuSajang.util.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Getter
-public class Consumer extends BaseTimeEntity {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +31,9 @@ public class Consumer extends BaseTimeEntity {
     private String phone;
     @Column(nullable = false)
     private String address;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MemberRole role;
 
     public void changeMailVerified(boolean verified) {
         this.mailVerified = verified;
@@ -44,13 +48,13 @@ public class Consumer extends BaseTimeEntity {
         this.phone = phone;
     }
 
-    public static ConsumerUpdateDetailDto from(Consumer consumer) {
-        return ConsumerUpdateDetailDto.builder()
-                .id(consumer.getId())
-                .name(consumer.getName())
-                .mail(consumer.mail)
-                .phone(consumer.phone)
-                .address(consumer.address)
+    public static MemberUpdateDetailDto from(Member member) {
+        return MemberUpdateDetailDto.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .mail(member.mail)
+                .phone(member.phone)
+                .address(member.address)
                 .build();
     }
 

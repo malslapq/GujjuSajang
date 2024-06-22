@@ -15,8 +15,8 @@ public class FilterConfig {
     public FilterRegistrationBean<JwtFilter> jwtFilterRegistration() {
         FilterRegistrationBean<JwtFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(jwtFilter);
-        registrationBean.addUrlPatterns("/consumer/logout");
-        registrationBean.addUrlPatterns("/consumer/detail/*");
+        registrationBean.addUrlPatterns("/member/logout");
+        registrationBean.addUrlPatterns("/member/detail/*");
         return registrationBean;
     }
 

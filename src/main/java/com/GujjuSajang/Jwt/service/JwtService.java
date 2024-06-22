@@ -1,7 +1,7 @@
 package com.GujjuSajang.Jwt.service;
 
 import com.GujjuSajang.Jwt.dto.TokenInfo;
-import com.GujjuSajang.Jwt.dto.TokenUserInfo;
+import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import com.GujjuSajang.Jwt.util.JwtIssuer;
 import com.GujjuSajang.Jwt.util.JwtParser;
 import com.GujjuSajang.Jwt.util.JwtUtil;
@@ -27,7 +27,7 @@ public class JwtService {
 
     // 토큰 발급
     @Transactional
-    public TokenInfo issueTokens(TokenUserInfo userInfo) {
+    public TokenInfo issueTokens(TokenMemberInfo userInfo) {
 
         // 엑세스 토큰 발급
         String accessToken = jwtIssuer.issureToken(
@@ -66,7 +66,7 @@ public class JwtService {
         validateRefreshToken(refreshToken, getRefreshToken);
 
         // 새 토큰 발급
-        return issueTokens(TokenUserInfo.from(claims));
+        return issueTokens(TokenMemberInfo.from(claims));
     }
 
     // 리프레시 토큰 검증
@@ -78,8 +78,8 @@ public class JwtService {
     }
 
     // 토큰 파싱
-    public TokenUserInfo parseAccessToken(String accessToken) {
-        return TokenUserInfo.from(
+    public TokenMemberInfo parseAccessToken(String accessToken) {
+        return TokenMemberInfo.from(
                 jwtParser.parseToken(accessToken, jwtUtil.getEncodedAccessKey()
                 )
         );

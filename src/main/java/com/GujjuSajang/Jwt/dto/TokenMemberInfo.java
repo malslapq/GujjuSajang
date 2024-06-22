@@ -1,5 +1,6 @@
 package com.GujjuSajang.Jwt.dto;
 
+import com.GujjuSajang.member.type.MemberRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.*;
@@ -13,11 +14,12 @@ import static javax.management.timer.Timer.ONE_MINUTE;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class TokenUserInfo {
+public class TokenMemberInfo {
 
     private Long id;
     private String mail;
     private boolean mailVerified;
+    private MemberRole role;
 
     public Claims createClaims(int expiresMin) {
         Claims claims = Jwts.claims();
@@ -26,16 +28,19 @@ public class TokenUserInfo {
         claims.put(KEY_ID, this.id);
         claims.put(KEY_MAIL, this.mail);
         claims.put(KEY_MAIL_VERIFIED, this.mailVerified);
+        claims.put(KEY_MEMBER_ROLE, this.role);
         claims.setIssuedAt(now);
         claims.setExpiration(new Date(now.getTime() + expiresMin * ONE_MINUTE));
 
         return claims;
     }
 
-    public static TokenUserInfo from(Claims claims) {
-        return TokenUserInfo.builder()
+    public static TokenMemberInfo from(Claims claims) {
+        return TokenMemberInfo.builder()
                 .id(claims.get(KEY_ID, Long.class))
                 .mail(claims.get(KEY_MAIL, String.class))
+                .mailVerified(claims.get(KEY_MAIL_VERIFIED, Boolean.class))
+                .role(MemberRole.valueOf(claims.get(KEY_MEMBER_ROLE, String.class)))
                 .build();
     }
 

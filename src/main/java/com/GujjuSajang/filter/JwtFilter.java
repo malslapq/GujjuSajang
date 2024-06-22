@@ -1,6 +1,6 @@
 package com.GujjuSajang.filter;
 
-import com.GujjuSajang.Jwt.dto.TokenUserInfo;
+import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import com.GujjuSajang.Jwt.service.JwtService;
 import com.GujjuSajang.exception.ConsumerException;
 import com.GujjuSajang.exception.ErrorCode;
@@ -36,9 +36,9 @@ public class JwtFilter implements Filter {
     // 토큰
     private boolean authenticateToken(HttpServletRequest request, String token) {
         if (StringUtils.hasText(token)) {
-            TokenUserInfo tokenUserInfo = jwtService.parseAccessToken(token);
-            request.setAttribute("tokenUserInfo", tokenUserInfo);
-            return tokenUserInfo.isMailVerified();
+            TokenMemberInfo tokenMemberInfo = jwtService.parseAccessToken(token);
+            request.setAttribute("tokenUserInfo", tokenMemberInfo);
+            return tokenMemberInfo.isMailVerified();
         }
         return false;
     }

@@ -1,4 +1,4 @@
-package com.GujjuSajang.Consumer.dto;
+package com.GujjuSajang.member.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class ConsumerUpdatePasswordDto {
+public class MemberUpdatePasswordDto {
 
     @NotBlank
     private String curPassword;

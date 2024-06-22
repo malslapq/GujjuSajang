@@ -1,4 +1,4 @@
-package com.GujjuSajang.Consumer.dto;
+package com.GujjuSajang.member.dto;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class ConsumerLoginDto {
+public class MemberLoginDto {
 
     private String mail;
     private String password;
