@@ -59,6 +59,7 @@ public class ConsumerService {
         return jwtService.issueTokens(TokenUserInfo.builder()
                 .id(consumer.getId())
                 .mail(consumer.getMail())
+                .mailVerified(consumer.isMailVerified())
                 .build()
         );
     }
@@ -72,6 +73,7 @@ public class ConsumerService {
         return jwtService.issueTokens(TokenUserInfo.builder()
                 .id(consumer.getId())
                 .mail(consumer.getMail())
+                .mailVerified(consumer.isMailVerified())
                 .build()
         );
     }

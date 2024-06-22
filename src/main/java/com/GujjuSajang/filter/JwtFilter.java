@@ -2,6 +2,8 @@ package com.GujjuSajang.filter;
 
 import com.GujjuSajang.Jwt.dto.TokenUserInfo;
 import com.GujjuSajang.Jwt.service.JwtService;
+import com.GujjuSajang.exception.ConsumerException;
+import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.TokenException;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.*;
@@ -32,10 +34,18 @@ public class JwtFilter implements Filter {
     }
 
     // 토큰
-    private void authenticateToken(HttpServletRequest request, String token) {
+    private boolean authenticateToken(HttpServletRequest request, String token) {
         if (StringUtils.hasText(token)) {
             TokenUserInfo tokenUserInfo = jwtService.parseAccessToken(token);
             request.setAttribute("tokenUserInfo", tokenUserInfo);
+            return tokenUserInfo.isMailVerified();
+        }
+        return false;
+    }
+
+    private void mailVerify(boolean isMailVerified) {
+        if (!isMailVerified) {
+            throw new ConsumerException(ErrorCode.MAIL_NOT_VERIFIED);
         }
     }
 
@@ -49,7 +59,7 @@ public class JwtFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         try {
-            authenticateToken(request, getJwtFrom(request));
+            mailVerify(authenticateToken(request, getJwtFrom(request)));
             filterChain.doFilter(request, response);
         } catch (TokenException e) {
             response.sendError(e.getStatus(), e.getMessage());

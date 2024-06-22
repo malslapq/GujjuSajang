@@ -53,20 +53,20 @@ public class ConsumerController {
     }
 
     // 상세 정보 조회
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<ConsumerUpdateDetailDto> getDetail(@PathVariable long id) {
         return ResponseEntity.ok().body(consumerService.getDetail(id));
     }
 
     // 정보 수정
-    @PatchMapping("/{id}")
+    @PatchMapping("/detail/{id}")
     public ResponseEntity<ConsumerUpdateDetailDto> updateDetail(@PathVariable Long id, @RequestBody @Valid ConsumerUpdateDetailDto consumerUpdateDetailDto, HttpServletRequest request) {
         TokenUserInfo tokenUserInfo = (TokenUserInfo) request.getAttribute("tokenUserInfo");
         return ResponseEntity.ok().body(consumerService.updateConsumer(id, tokenUserInfo.getId(), consumerUpdateDetailDto));
     }
 
     // 비밀번호 수정
-    @PatchMapping("/{id}/password")
+    @PatchMapping("/detail/{id}/password")
     public ResponseEntity<ConsumerUpdatePasswordDto.Response> updatePassword(@PathVariable Long id, @RequestBody @Valid ConsumerUpdatePasswordDto consumerUpdatePasswordDto, HttpServletRequest request) {
         TokenUserInfo tokenUserInfo = (TokenUserInfo) request.getAttribute("tokenUserInfo");
         return ResponseEntity.ok().body(consumerService.updatePassword(id, tokenUserInfo.getId(), consumerUpdatePasswordDto));

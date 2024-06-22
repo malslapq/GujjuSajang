@@ -17,6 +17,7 @@ public enum ErrorCode {
     MISS_MATCH_CONSUMER(HttpStatus.BAD_REQUEST, "변경하려는 회원과 일치하지 않습니다."),
     MISS_MATCH_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     INVALID_CODE(HttpStatus.UNAUTHORIZED, "유효하지 않은 코드"),
+    MAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED, "메일 인증이 필요합니다."),
     FAIL_SEND_MAIL(HttpStatus.SERVICE_UNAVAILABLE, "일시적인 메일 전송 오류입니다." );
 
     private final HttpStatus httpStatus;

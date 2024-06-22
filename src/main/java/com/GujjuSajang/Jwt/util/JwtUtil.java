@@ -15,6 +15,7 @@ public class JwtUtil {
     public static final String BEARER_PREFIX = "Bearer ";
     public static final String KEY_ID = "id";
     public static final String KEY_MAIL = "mail";
+    public static final String KEY_MAIL_VERIFIED = "mailVerified";
 
     @Value("${jwt.secretKey.access}")
     private String accessKey;
