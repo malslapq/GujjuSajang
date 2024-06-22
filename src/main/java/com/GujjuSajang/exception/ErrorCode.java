@@ -8,6 +8,12 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
+    // 레디스 관련
+    REDIS_OPERATION_FAILURE(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 작업 실패"),
+
+    // 장바구니 관련
+    INVALID_CART_UPDATE(HttpStatus.BAD_REQUEST, "잘못된 장바구니 제품 변경 요청"),
+
     // 상품 관련
     NOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 
@@ -19,8 +25,8 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰"),
 
     // 회원 관련
-    NOT_FOUND_CONSUMER(HttpStatus.BAD_REQUEST, "구매회원이 존재하지 않습니다."),
-    MISS_MATCH_CONSUMER(HttpStatus.BAD_REQUEST, "변경하려는 회원과 일치하지 않습니다."),
+    NOT_FOUND_MEMBER(HttpStatus.BAD_REQUEST, "구매회원이 존재하지 않습니다."),
+    MISS_MATCH_MEMBER(HttpStatus.BAD_REQUEST, "회원이 일치하지 않습니다."),
     MISS_MATCH_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     INVALID_CODE(HttpStatus.UNAUTHORIZED, "유효하지 않은 코드"),
     MAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED, "메일 인증이 필요합니다."),

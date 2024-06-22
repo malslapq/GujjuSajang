@@ -7,7 +7,7 @@ import com.GujjuSajang.Jwt.util.JwtParser;
 import com.GujjuSajang.Jwt.util.JwtUtil;
 import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.TokenException;
-import com.GujjuSajang.redis.repository.RefreshTokenRepository;
+import com.GujjuSajang.Jwt.Repository.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

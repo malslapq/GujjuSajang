@@ -12,8 +12,8 @@ import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
 import com.GujjuSajang.member.entity.Member;
 import com.GujjuSajang.member.repository.MemberRepository;
 import com.GujjuSajang.member.type.MemberRole;
-import com.GujjuSajang.redis.repository.MailVerifiedRepository;
-import com.GujjuSajang.redis.repository.RefreshTokenRepository;
+import com.GujjuSajang.member.repository.MailVerifiedRepository;
+import com.GujjuSajang.Jwt.Repository.RefreshTokenRepository;
 import com.GujjuSajang.util.Mail.MailSender;
 import com.GujjuSajang.util.PasswordEncoder;
 import jakarta.mail.MessagingException;
@@ -55,7 +55,7 @@ public class MemberService {
         try {
             mailVerifiedRepository.save(member.getId(), mailSender.sendVerifiedMail(member.getId(), member.getMail()));
         } catch (MessagingException e) {
-            throw new MemberException(ErrorCode.FAIL_SEND_MAIL);
+            throw new MemberException(ErrorCode.FAIL_SEND_MAIL, e);
         }
 
         jwtService.issueTokens(TokenMemberInfo.builder()
@@ -68,8 +68,7 @@ public class MemberService {
     // 로그인
     public TokenInfo login(MemberLoginDto memberLoginDto) {
         Member member = memberRepository.findByMail(memberLoginDto.getMail()).orElseThrow(() ->
-                new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
-        System.out.println(member.getRole());
+                new MemberException(ErrorCode.NOT_FOUND_MEMBER));
         passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword());
         matchPassword(memberLoginDto.getPassword(), member.getPassword());
         return jwtService.issueTokens(TokenMemberInfo.builder()
@@ -89,7 +88,7 @@ public class MemberService {
     // 메일 인증
     @Transactional
     public void verifiedMail(long id, String code) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_MEMBER));
         String getCode = mailVerifiedRepository.getCode(id).orElseThrow(() -> new MemberException(ErrorCode.INVALID_CODE));
         if (code.equals(getCode)) {
             member.changeMailVerified(true);
@@ -100,7 +99,7 @@ public class MemberService {
     // 회원 상세 조회
     @Transactional(readOnly = true)
     public MemberUpdateDetailDto getDetail(long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_MEMBER));
         return MemberUpdateDetailDto.from(member);
     }
 
@@ -108,7 +107,7 @@ public class MemberService {
     @Transactional
     public MemberUpdateDetailDto updateConsumer(Long id, Long tokenId, MemberUpdateDetailDto memberUpdateDetailDto) {
         verifyId(tokenId, id);
-        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_MEMBER));
         matchPassword(memberUpdateDetailDto.getPassword(), member.getPassword());
         member.changeAddressAndPhone(memberUpdateDetailDto.getAddress(), memberUpdateDetailDto.getPhone());
         return MemberUpdateDetailDto.from(member);
@@ -118,7 +117,7 @@ public class MemberService {
     @Transactional
     public MemberUpdatePasswordDto.Response updatePassword(Long id, Long tokenId, MemberUpdatePasswordDto memberUpdatePasswordDto) {
         verifyId(id, tokenId);
-        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_CONSUMER));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_MEMBER));
         matchPassword(memberUpdatePasswordDto.getCurPassword(), member.getPassword());
         member.changePassword(passwordEncoder.encode(memberUpdatePasswordDto.getNewPassword()));
         return MemberUpdatePasswordDto.Response.builder()
@@ -133,7 +132,7 @@ public class MemberService {
     // id 검증
     private void verifyId(Long tokenId, Long requestId) {
         if (!Objects.equals(tokenId, requestId)) {
-            throw new MemberException(ErrorCode.MISS_MATCH_CONSUMER);
+            throw new MemberException(ErrorCode.MISS_MATCH_MEMBER);
         }
     }
 

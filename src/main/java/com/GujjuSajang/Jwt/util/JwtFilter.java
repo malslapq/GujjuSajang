@@ -1,9 +1,9 @@
-package com.GujjuSajang.filter;
+package com.GujjuSajang.Jwt.util;
 
 import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import com.GujjuSajang.Jwt.service.JwtService;
-import com.GujjuSajang.exception.MemberException;
 import com.GujjuSajang.exception.ErrorCode;
+import com.GujjuSajang.exception.MemberException;
 import com.GujjuSajang.exception.TokenException;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.*;
