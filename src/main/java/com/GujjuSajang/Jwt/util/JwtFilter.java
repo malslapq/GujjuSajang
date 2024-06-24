@@ -37,7 +37,7 @@ public class JwtFilter implements Filter {
     private boolean authenticateToken(HttpServletRequest request, String token) {
         if (StringUtils.hasText(token)) {
             TokenMemberInfo tokenMemberInfo = jwtService.parseAccessToken(token);
-            request.setAttribute("tokenUserInfo", tokenMemberInfo);
+            request.setAttribute("tokenMemberInfo", tokenMemberInfo);
             return tokenMemberInfo.isMailVerified();
         }
         return false;

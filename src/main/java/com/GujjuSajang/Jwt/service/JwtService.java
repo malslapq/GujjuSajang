@@ -7,7 +7,7 @@ import com.GujjuSajang.Jwt.util.JwtParser;
 import com.GujjuSajang.Jwt.util.JwtUtil;
 import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.TokenException;
-import com.GujjuSajang.Jwt.Repository.RefreshTokenRepository;
+import com.GujjuSajang.Jwt.Repository.RefreshTokenRedisRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class JwtService {
     private final JwtParser jwtParser;
     private final JwtIssuer jwtIssuer;
     private final JwtUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     // 토큰 발급
     @Transactional
@@ -42,7 +42,7 @@ public class JwtService {
         );
 
         // 리프레시 토큰 레디스에 저장
-        refreshTokenRepository.save(userInfo.getId(), refreshToken, jwtUtil.getRefreshTokenExpired());
+        refreshTokenRedisRepository.save(userInfo.getId(), refreshToken, jwtUtil.getRefreshTokenExpired());
 
         // 토큰 반환
         return TokenInfo.builder()
@@ -59,7 +59,7 @@ public class JwtService {
         Claims claims = jwtParser.parseToken(refreshToken, jwtUtil.getEncodedRefreshKey());
 
         // 레디스에 저장되있는 리프레시토큰 가져오되 없을 경우 에러 던지기
-        String getRefreshToken = refreshTokenRepository.getRefreshToken(claims.get(KEY_ID, Long.class))
+        String getRefreshToken = refreshTokenRedisRepository.getRefreshToken(claims.get(KEY_ID, Long.class))
                 .orElseThrow(() -> new TokenException(ErrorCode.INVALID_TOKEN));
 
         // 요청시 받은 리프레시토큰과 레디스에서 가져온 리프레시토큰이 같은지 검증

@@ -1,45 +1,42 @@
-package com.GujjuSajang.Jwt.Repository;
+package com.GujjuSajang.cart.repository;
 
+import com.GujjuSajang.cart.dto.CartDto;
 import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.RedisException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
 import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class RefreshTokenRepository {
+public class CartRedisRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private static final String KEY_PREFIX = "cart::";
 
-    private static final String KEY_PREFIX = "refreshToken::";
-
-    public void save(long id, String refreshToken, int expiresMin) {
+    public void save(Long memberId, CartDto cartDto) {
         try {
-            redisTemplate.opsForValue().set(KEY_PREFIX + id, refreshToken, Duration.ofMinutes(expiresMin));
+            redisTemplate.opsForValue().set(KEY_PREFIX + memberId, cartDto);
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
 
-    public Optional<String> getRefreshToken(long id) {
+    public Optional<CartDto> get(Long memberId) {
         try {
-            String token = (String) redisTemplate.opsForValue().get(KEY_PREFIX + id);
-            return Optional.ofNullable(token);
+            return Optional.ofNullable((CartDto) redisTemplate.opsForValue().get(KEY_PREFIX + memberId));
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
 
-    public void delete(long id) {
+    public void delete(Long memberId) {
         try {
-            redisTemplate.delete(KEY_PREFIX + id);
+            redisTemplate.opsForValue().set(KEY_PREFIX + memberId, "");
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
-
 }

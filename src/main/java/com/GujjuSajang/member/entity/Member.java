@@ -1,5 +1,6 @@
 package com.GujjuSajang.member.entity;
 
+import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
 import com.GujjuSajang.member.type.MemberRole;
 import com.GujjuSajang.util.BaseTimeEntity;
@@ -46,6 +47,22 @@ public class Member extends BaseTimeEntity {
     public void changeAddressAndPhone(String address, String phone) {
         this.address = address;
         this.phone = phone;
+    }
+
+    public void changeRole(MemberRole role) {
+        this.role = role;
+    }
+
+    public static Member from(MemberSignUpDto memberSignUpDto, String encodedPassword) {
+        return Member.builder()
+                .name(memberSignUpDto.getName())
+                .password(encodedPassword)
+                .mail(memberSignUpDto.getMail())
+                .mailVerified(false)
+                .phone(memberSignUpDto.getPhone())
+                .address(memberSignUpDto.getAddress())
+                .role(MemberRole.MEMBER)
+                .build();
     }
 
 }

@@ -20,6 +20,8 @@ public class FilterConfig {
         registrationBean.addUrlPatterns("/member/detail/*");
         registrationBean.addUrlPatterns("/product", "/products","/product/*");
         registrationBean.addUrlPatterns("/cart", "/cart/*");
+        registrationBean.addUrlPatterns("/orders", "/orders/*");
+        registrationBean.addUrlPatterns("/seller", "/seller/*");
         return registrationBean;
     }
 

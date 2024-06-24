@@ -13,5 +13,4 @@ import java.util.List;
 public class CartDto {
 
     private List<CartProductsDto> cartProductsDtos = new ArrayList<>();
-
 }

@@ -1,6 +1,6 @@
 package com.GujjuSajang.product.entity;
 
-import com.GujjuSajang.product.dto.ProductDto;
+import com.GujjuSajang.product.dto.ProductDetailDto;
 import com.GujjuSajang.util.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,13 +30,12 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false)
     private String description;
 
-    public static ProductDto from(ProductDto productDto) {
-        return ProductDto.builder()
-                .id(productDto.getId())
-                .sellerId(productDto.getSellerId())
-                .name(productDto.getName())
-                .price(productDto.getPrice())
-                .description(productDto.getDescription())
+    public static Product from(ProductDetailDto productDetailDto) {
+        return Product.builder()
+                .sellerId(productDetailDto.getSellerId())
+                .name(productDetailDto.getName())
+                .price(productDetailDto.getPrice())
+                .description(productDetailDto.getDescription())
                 .build();
     }
 

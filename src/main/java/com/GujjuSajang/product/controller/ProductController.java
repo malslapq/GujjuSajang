@@ -1,7 +1,6 @@
 package com.GujjuSajang.product.controller;
 
-import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
-import com.GujjuSajang.product.dto.ProductDto;
+import com.GujjuSajang.product.dto.ProductDetailDto;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,30 +10,39 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.GujjuSajang.Jwt.util.JwtUtil.getTokenMemberInfo;
+
 @RestController
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping("/product")
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto, HttpServletRequest request) {
-        return ResponseEntity.ok(productService.createProduct(getTokenMemberInfo(request), productDto));
+    // 제품 등록
+    @PostMapping("/product/{seller-id}")
+    public ResponseEntity<ProductDetailDto> createProduct(
+            @PathVariable("seller-id") Long sellerId,
+            @RequestBody ProductDetailDto productDetailDto,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(productService.createProduct(sellerId, getTokenMemberInfo(request), productDetailDto));
     }
 
-    @GetMapping("/product/{id}")
-    public ResponseEntity<ProductDto> getProduct(@PathVariable long id) {
+    // 제품 상세 조회
+    @GetMapping("/product/{product-id}")
+    public ResponseEntity<ProductDetailDto> getProduct(@PathVariable("product-id") long id) {
         return ResponseEntity.ok(productService.getProduct(id));
     }
 
+    // 제품 검색
     @GetMapping("/products")
-    public ResponseEntity<ProductPageDto> getProducts(@RequestParam int page, @RequestParam int size, @RequestParam String keyword, HttpServletRequest request) {
+    public ResponseEntity<ProductPageDto> getProducts(
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam String keyword,
+            HttpServletRequest request) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(productService.getProducts(pageable, keyword));
     }
 
-    private TokenMemberInfo getTokenMemberInfo(HttpServletRequest request) {
-        return (TokenMemberInfo) request.getAttribute("tokenUserInfo");
-    }
 
 }

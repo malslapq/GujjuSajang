@@ -1,10 +1,11 @@
 package com.GujjuSajang.util.Mail;
 
+import com.GujjuSajang.exception.ErrorCode;
+import com.GujjuSajang.exception.MemberException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,8 @@ import java.security.SecureRandom;
 public class MailSender {
 
     private final JavaMailSender javaMailSender;
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    @Value("${spring.mail.randomCode}")
+    private String CHARACTERS;
     @Value("${spring.mail.subject}")
     private String subject;
     @Value("${spring.mail.content}")
@@ -24,14 +26,19 @@ public class MailSender {
     @Value("${spring.mail.codeLength}")
     private int codeLength;
 
-    public String sendVerifiedMail(long id, String mail) throws MessagingException {
+    public String sendVerifiedMail(Long id, String mail) {
         String code = getVerifiedCode(codeLength);
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setTo(mail);
-        helper.setSubject(subject);
-        helper.setText(content + id + "&code=" + code + "\">클릭</a>", true);
-        javaMailSender.send(message);
+        String completeLink = content + id + "&code=" + code + "\">클릭 안하면 지상렬</a>";
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(mail);
+            helper.setSubject(subject);
+            helper.setText(completeLink, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            throw new MemberException(ErrorCode.FAIL_SEND_MAIL, e);
+        }
         return code;
     }
 

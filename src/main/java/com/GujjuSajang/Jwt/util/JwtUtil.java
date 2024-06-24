@@ -1,7 +1,9 @@
 package com.GujjuSajang.Jwt.util;
 
+import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -39,5 +41,8 @@ public class JwtUtil {
         encodedRefreshKey = Keys.hmacShaKeyFor(refreshKey.getBytes());
     }
 
+    public static TokenMemberInfo getTokenMemberInfo(HttpServletRequest request) {
+        return (TokenMemberInfo) request.getAttribute("tokenMemberInfo");
+    }
 
 }

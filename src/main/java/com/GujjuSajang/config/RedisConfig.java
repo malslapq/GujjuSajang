@@ -10,13 +10,13 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-@Configuration
+
 @EnableRedisRepositories
+@Configuration
 public class RedisConfig {
 
     @Value("${redis.host}")
     private String host;
-
     @Value("${redis.port}")
     private int port;
 

@@ -1,32 +1,36 @@
-package com.GujjuSajang.cart.repository;
+package com.GujjuSajang.member.repository;
 
-import com.GujjuSajang.cart.dto.CartDto;
 import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.RedisException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class CartRepository {
+public class MailVerifiedRedisRepository {
+
+    private static final String MAIL_VERIFIED_PREFIX = "MAIL_VERIFIED::";
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private static final String KEY_PREFIX = "cart::";
 
-    public void save(Long id, CartDto cartDto) {
+    public void save(Long id, String code) {
+
         try {
-            redisTemplate.opsForValue().set(KEY_PREFIX + id, cartDto);
+            redisTemplate.opsForValue().set(MAIL_VERIFIED_PREFIX + id, code, Duration.ofMinutes(5));
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
 
-    public Optional<CartDto> get(Long id) {
+    public Optional<String> getCode(Long id) {
         try {
-            return Optional.ofNullable((CartDto) redisTemplate.opsForValue().get(KEY_PREFIX + id));
+            String code = (String) redisTemplate.opsForValue().get(MAIL_VERIFIED_PREFIX + id);
+            return Optional.ofNullable(code);
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
@@ -34,9 +38,10 @@ public class CartRepository {
 
     public void delete(Long id) {
         try {
-            redisTemplate.delete(KEY_PREFIX + id);
+            redisTemplate.delete(MAIL_VERIFIED_PREFIX + id);
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
+
 }

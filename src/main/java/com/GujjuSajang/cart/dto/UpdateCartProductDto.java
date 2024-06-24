@@ -9,7 +9,6 @@ import lombok.*;
 @Builder
 public class UpdateCartProductDto {
 
-    private Long productId;
     private int count;
 
 }

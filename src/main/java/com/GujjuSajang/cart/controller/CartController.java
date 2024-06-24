@@ -1,6 +1,5 @@
 package com.GujjuSajang.cart.controller;
 
-import com.GujjuSajang.Jwt.dto.TokenMemberInfo;
 import com.GujjuSajang.cart.dto.CartDto;
 import com.GujjuSajang.cart.dto.CartProductsDto;
 import com.GujjuSajang.cart.dto.UpdateCartProductDto;
@@ -10,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.GujjuSajang.Jwt.util.JwtUtil.getTokenMemberInfo;
+
 @RequestMapping("/cart")
 @RestController
 @RequiredArgsConstructor
@@ -17,32 +18,44 @@ public class CartController {
 
     private final CartService cartService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CartDto> getCart(@PathVariable Long id, HttpServletRequest request) {
-        TokenMemberInfo tokenUserInfo = getTokenMemberInfo(request);
-        return ResponseEntity.ok(cartService.getCart(id, tokenUserInfo.getId()));
+    // 제품 담기
+    @PostMapping("/{member-id}")
+    public ResponseEntity<CartDto> addCartProduct(
+            @PathVariable("member-id") Long memberId,
+            @RequestBody CartProductsDto cartProductsDto,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(cartService.addCartProduct(memberId, getTokenMemberInfo(request).getId(), cartProductsDto));
     }
 
-    @PostMapping
-    public ResponseEntity<CartDto> addCartProduct(@RequestBody CartProductsDto cartProductsDto, HttpServletRequest request) {
-        TokenMemberInfo tokenUserInfo = getTokenMemberInfo(request);
-        return ResponseEntity.ok(cartService.addCartProduct(tokenUserInfo.getId(), cartProductsDto));
+    // 조회
+    @GetMapping("/{member-id}")
+    public ResponseEntity<CartDto> getCart(@PathVariable("member-id") Long memberId, HttpServletRequest request) {
+        return ResponseEntity.ok(cartService.getCart(memberId, getTokenMemberInfo(request).getId()));
     }
 
-    @PatchMapping
-    public ResponseEntity<CartDto> updateCart(@RequestBody UpdateCartProductDto updateCartProductDto, HttpServletRequest request) {
-        TokenMemberInfo tokenUserInfo = getTokenMemberInfo(request);
-        return ResponseEntity.ok(cartService.updateCart(tokenUserInfo.getId(), updateCartProductDto));
+    // 장바구니 제품 수량 변경
+    @PatchMapping("/{member-id}/products/{product-id}")
+    public ResponseEntity<CartDto> updateCart(
+            @PathVariable("member-id") Long memberId,
+            @PathVariable("product-id") Long productId,
+            @RequestBody UpdateCartProductDto updateCartProductDto,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(cartService.updateCart(memberId, productId, getTokenMemberInfo(request).getId(), updateCartProductDto));
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteCart(@PathVariable Long id, HttpServletRequest request) {
-        TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
-        cartService.deleteCart(id, tokenMemberInfo.getId());
+    // 장바구니 제품 삭제
+    @DeleteMapping("/{member-id}/products/{product-id}")
+    public ResponseEntity<CartDto> deleteCartProduct(
+            @PathVariable("member-id") Long memberId,
+            @PathVariable("product-id") Long productId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(cartService.deleteCartProduct(memberId, productId, getTokenMemberInfo(request).getId()));
     }
 
-    private TokenMemberInfo getTokenMemberInfo(HttpServletRequest request) {
-        return (TokenMemberInfo) request.getAttribute("tokenUserInfo");
+    // 장바구니 비우기
+    @DeleteMapping("/{member-id}")
+    public void deleteCart(@PathVariable("member-id") Long memberId, HttpServletRequest request) {
+        cartService.deleteCart(memberId, getTokenMemberInfo(request).getId());
     }
 
 }

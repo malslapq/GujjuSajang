@@ -1,4 +1,4 @@
-package com.GujjuSajang.member.repository;
+package com.GujjuSajang.Jwt.Repository;
 
 import com.GujjuSajang.exception.ErrorCode;
 import com.GujjuSajang.exception.RedisException;
@@ -11,32 +11,32 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class MailVerifiedRepository {
-
-    private static final String MAIL_VERIFIED_PREFIX = "MAIL_VERIFIED::";
+public class RefreshTokenRedisRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void save(Long id, String code) {
+    private static final String KEY_PREFIX = "refreshToken::";
+
+    public void save(long id, String refreshToken, int expiresMin) {
         try {
-            redisTemplate.opsForValue().set(MAIL_VERIFIED_PREFIX + id, code, Duration.ofMinutes(5));
+            redisTemplate.opsForValue().set(KEY_PREFIX + id, refreshToken, Duration.ofMinutes(expiresMin));
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
 
-    public Optional<String> getCode(Long id) {
+    public Optional<String> getRefreshToken(long id) {
         try {
-            String code = (String) redisTemplate.opsForValue().get(MAIL_VERIFIED_PREFIX + id);
-            return Optional.ofNullable(code);
+            String token = (String) redisTemplate.opsForValue().get(KEY_PREFIX + id);
+            return Optional.ofNullable(token);
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
     }
 
-    public void delete(Long id) {
+    public void delete(long id) {
         try {
-            redisTemplate.delete(MAIL_VERIFIED_PREFIX + id);
+            redisTemplate.delete(KEY_PREFIX + id);
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }
