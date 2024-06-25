@@ -23,13 +23,13 @@ public class Orders extends BaseTimeEntity {
     @Column(nullable = false)
     private int totalPrice;
 
-
     public static Orders from(Long memberId, CartDto cartDto) {
         return Orders.builder()
                 .memberId(memberId)
                 .totalPrice(cartDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum())
                 .build();
     }
+
 
 
 }

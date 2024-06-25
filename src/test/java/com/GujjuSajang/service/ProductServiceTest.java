@@ -106,7 +106,7 @@ public class ProductServiceTest {
 
     @DisplayName("제품 등록 성공")
     @Test
-    public void product_Create_Success(){
+    public void product_Create_Success() {
         //given
         given(productRepository.save(any(Product.class))).willReturn(product);
         given(stockRepository.save(any(Stock.class))).willReturn(stock);
@@ -126,7 +126,7 @@ public class ProductServiceTest {
 
     @DisplayName("제품 등록 실패 - 권한 없음")
     @Test
-    public void product_Create_Fail_RoleNotAllow(){
+    public void product_Create_Fail_RoleNotAllow() {
         //given
         TokenMemberInfo roleToken = TokenMemberInfo.builder().role(MemberRole.MEMBER).build();
 
@@ -143,7 +143,7 @@ public class ProductServiceTest {
 
     @DisplayName("제품 검색 성공")
     @Test
-    public void getProduct_Success(){
+    public void getProduct_Success() {
         //given
         Page<Product> productsPage = new PageImpl<>(List.of(product), PageRequest.of(0, 5), 1);
         given(productRepository.findByNameContaining(any(), any(Pageable.class))).willReturn(productsPage);

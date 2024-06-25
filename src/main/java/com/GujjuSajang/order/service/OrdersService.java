@@ -44,6 +44,7 @@ public class OrdersService {
     private final ProductRepository productRepository;
     private final StockService stockService;
 
+    // 주문 생성
     @Transactional
     public OrdersDto createOrder(Long memberId, Long tokenId) {
 
@@ -89,6 +90,7 @@ public class OrdersService {
         return OrdersDto.from(orders);
     }
 
+    // 주문 조회
     @Transactional(readOnly = true)
     public OrdersPageDto getOrder(Long memberId, Long tokenMemberId, Pageable pageable) {
         validateMemberId(memberId, tokenMemberId);
@@ -108,6 +110,10 @@ public class OrdersService {
     @Transactional
     public List<OrdersProductDto> getOrderProducts(Long orderId) {
         List<OrdersProduct> ordersProducts = ordersProductRepository.findByOrdersId(orderId);
+
+        if (ordersProducts.isEmpty()) {
+            throw new OrdersException(ErrorCode.NOT_FOUND_ORDER_PRODUCT);
+        }
 
         // 상태 업데이트
         ordersProducts.forEach(ordersProduct -> {

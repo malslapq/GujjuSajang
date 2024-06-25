@@ -109,7 +109,7 @@ public class SellerServiceTest {
 
     @DisplayName("판매자 등록 성공")
     @Test
-    void sellerCreate_Success(){
+    void sellerCreate_Success() {
         //given
         given(memberRepository.findById(member.getId())).willReturn(Optional.ofNullable(member));
         given(sellerRepository.save(any())).willReturn(seller);
@@ -129,7 +129,7 @@ public class SellerServiceTest {
 
     @DisplayName("판매자 등록 실패 - 회원을 찾을 수 없음")
     @Test
-    void sellerCreate_Fail_NotFoundMember(){
+    void sellerCreate_Fail_NotFoundMember() {
         //given
 
         //when
@@ -143,7 +143,7 @@ public class SellerServiceTest {
 
     @DisplayName("제품 재고 변경 성공")
     @Test
-    void updateProductStock_Success(){
+    void updateProductStock_Success() {
         //given
         given(stockRepository.findByProductId(anyLong())).willReturn(Optional.ofNullable(stock));
 
@@ -161,7 +161,7 @@ public class SellerServiceTest {
 
     @DisplayName("제품 재고 변경 실패 - 재고 정보를 찾을 수 없음")
     @Test
-    void updateProductStock_Fail_NotFoundStock(){
+    void updateProductStock_Fail_NotFoundStock() {
         //given
         given(stockRepository.findByProductId(product.getId())).willReturn(Optional.empty());
 
@@ -176,7 +176,7 @@ public class SellerServiceTest {
 
     @DisplayName("제품 재고 변경 실패 - 권한이 없음")
     @Test
-    void updateProductStock_Fail_RoleNotAllow(){
+    void updateProductStock_Fail_RoleNotAllow() {
         //given
         tokenMemberInfo = TokenMemberInfo.builder().role(MemberRole.MEMBER).build();
 
@@ -187,7 +187,6 @@ public class SellerServiceTest {
                 .isInstanceOf(MemberException.class)
                 .hasMessage(ErrorCode.ROLE_NOT_ALLOWED.getErrorMessage());
     }
-
 
 
 }
