@@ -17,7 +17,9 @@ import com.GujjuSajang.order.type.OrdersStatus;
 import com.GujjuSajang.product.entity.Product;
 import com.GujjuSajang.product.repository.ProductRepository;
 import com.GujjuSajang.product.stock.Entity.Stock;
+import com.GujjuSajang.product.stock.dto.StockDto;
 import com.GujjuSajang.product.stock.repository.StockRepository;
+import com.GujjuSajang.product.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +42,7 @@ public class OrdersService {
     private final CartRedisRepository cartRedisRepository;
     private final StockRepository stockRepository;
     private final ProductRepository productRepository;
+    private final StockService stockService;
 
     @Transactional
     public OrdersDto createOrder(Long memberId, Long tokenId) {
@@ -102,8 +105,22 @@ public class OrdersService {
     }
 
     // 주문 내역 상세 조회
+    @Transactional
     public List<OrdersProductDto> getOrderProducts(Long orderId) {
         List<OrdersProduct> ordersProducts = ordersProductRepository.findByOrdersId(orderId);
+
+        // 상태 업데이트
+        ordersProducts.forEach(ordersProduct -> {
+
+            // 주문이 반품완료 된 건이라면 재고 업데이트
+            if (ordersProduct.changeDeliveryStatus()) {
+                stockService.updateStock(StockDto.builder()
+                        .productId(ordersProduct.getProductId())
+                        .count(ordersProduct.getCount())
+                        .build());
+            }
+        });
+
         List<Long> productIds = ordersProducts.stream().map(OrdersProduct::getProductId).toList();
         Map<Long, String> productNameMap = productRepository.findAllById(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, Product::getName));
