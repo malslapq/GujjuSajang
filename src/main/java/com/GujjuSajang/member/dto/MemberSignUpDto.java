@@ -1,16 +1,15 @@
 package com.GujjuSajang.member.dto;
 
+import com.GujjuSajang.member.entity.Member;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class MemberSignUpDto {
 
     @NotBlank
@@ -24,5 +23,14 @@ public class MemberSignUpDto {
     private String phone;
     @NotBlank
     private String address;
+
+    public static MemberSignUpDto from(Member member) {
+        return MemberSignUpDto.builder()
+                .name(member.getName())
+                .mail(member.getMail())
+                .phone(member.getPhone())
+                .address(member.getAddress())
+                .build();
+    }
 
 }

@@ -36,7 +36,7 @@ public class MemberService {
 
     // 회원 가입
     @Transactional
-    public void signUp(MemberSignUpDto memberSignUpDto) {
+    public MemberSignUpDto signUp(MemberSignUpDto memberSignUpDto) {
 
         String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
         Member member;
@@ -56,6 +56,7 @@ public class MemberService {
                 .mail(member.getMail())
                 .mailVerified(member.isMailVerified())
                 .build());
+        return MemberSignUpDto.from(member);
     }
 
     // 로그인

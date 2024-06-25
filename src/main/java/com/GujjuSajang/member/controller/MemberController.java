@@ -26,9 +26,8 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody @Valid MemberSignUpDto memberSignUpDto) {
-        consumerService.signUp(memberSignUpDto);
-        return ResponseEntity.ok().body("회원가입 성공");
+    public ResponseEntity<MemberSignUpDto> signUp(@RequestBody @Valid MemberSignUpDto memberSignUpDto) {
+        return ResponseEntity.ok().body(consumerService.signUp(memberSignUpDto));
     }
 
     // 로그인
