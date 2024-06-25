@@ -18,16 +18,19 @@ public class JwtParser {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
+            // 만료
             throw new TokenException(ErrorCode.TOKEN_EXPIRED, e);
         } catch (UnsupportedJwtException e) {
-            // 지원되지 않는 JWT 토큰 형식인 경우 발생합니다.
+            // 지원되지 않는 토큰 형식
             throw new TokenException(ErrorCode.UNSUPPORTED_TOKEN, e);
         } catch (MalformedJwtException e) {
-            // 잘못된 형식의 JWT 토큰인 경우 발생합니다.
+            // 잘못된 형식의 토큰
             throw new TokenException(ErrorCode.MALFORMED_TOKEN, e);
         } catch (SecurityException e) {
-            // JWT 토큰의 서명이 잘못된 경우 발생합니다.
+            // 잘못된 토큰 서명
             throw new TokenException(ErrorCode.INVALID_SIGNATURE, e);
+        } catch (JwtException e) {
+            throw new TokenException(ErrorCode.INVALID_TOKEN, e);
         }
     }
 }
