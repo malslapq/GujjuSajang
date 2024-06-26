@@ -1,0 +1,126 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - gitAction
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set up environment variables
+        run: |
+          echo 'MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}' >> .env
+          echo 'MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}' >> .env
+          echo 'MYSQL_USER=${{ secrets.MYSQL_USER }}' >> .env
+          echo 'MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}' >> .env
+          echo 'MAIL_HOST=${{ secrets.MAIL_HOST }}' >> .env
+          echo 'MAIL_PORT=${{ secrets.MAIL_PORT }}' >> .env
+          echo 'MAIL_USER_NAME=${{ secrets.MAIL_USER_NAME }}' >> .env
+          echo 'MAIL_USER_PASSWORD=${{ secrets.MAIL_USER_PASSWORD }}' >> .env
+          echo 'MAIL_SMTP_AUTH=${{ secrets.MAIL_SMTP_AUTH }}' >> .env
+          echo 'MAIL_SMTP_STARTTLS_ENABLE=${{ secrets.MAIL_SMTP_STARTTLS_ENABLE }}' >> .env
+          echo 'MAIL_SMTP_STARTTLS_REQUIRED=${{ secrets.MAIL_SMTP_STARTTLS_REQUIRED }}' >> .env
+          echo 'MAIL_SMTP_CONNECTIONTIMEOUT=${{ secrets.MAIL_SMTP_CONNECTIONTIMEOUT }}' >> .env
+          echo 'MAIL_SMTP_TIMEOUT=${{ secrets.MAIL_SMTP_TIMEOUT }}' >> .env
+          echo 'MAIL_SMTP_WRITETIMEOUT=${{ secrets.MAIL_SMTP_WRITETIMEOUT }}' >> .env
+          echo 'MAIL_CODE_LENGTH=${{ secrets.MAIL_CODE_LENGTH }}' >> .env
+          echo 'MAIL_RANDOM_CODE=${{ secrets.MAIL_RANDOM_CODE }}' >> .env
+          echo 'MAIL_SUBJECT=${{ secrets.MAIL_SUBJECT }}' >> .env
+          echo 'MAIL_CONTENT=${{ secrets.MAIL_CONTENT }}' >> .env
+          echo 'JWT_SECRET_KEY_ACCESS=${{ secrets.JWT_SECRET_KEY_ACCESS }}' >> .env
+          echo 'JWT_SECRET_KEY_REFRESH=${{ secrets.JWT_SECRET_KEY_REFRESH }}' >> .env
+          echo 'JWT_EXPIRED_TIME_ACCESS=${{ secrets.JWT_EXPIRED_TIME_ACCESS }}' >> .env
+          echo 'JWT_EXPIRED_TIME_REFRESH=${{ secrets.JWT_EXPIRED_TIME_REFRESH }}' >> .env
+          echo 'SPRING_DATASOURCE_USERNAME=${{ secrets.MYSQL_USER }}' >> .env
+          echo 'SPRING_DATASOURCE_PASSWORD=${{ secrets.MYSQL_PASSWORD }}' >> .env
+
+      - name: Wait for MySQL and Redis to be ready
+        run: sleep 30
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Run tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3307/${{ secrets.MYSQL_DATABASE }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.MYSQL_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          SPRING_REDIS_HOST: localhost
+          SPRING_REDIS_PORT: 6379
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USER_NAME: ${{ secrets.MAIL_USER_NAME }}
+          MAIL_USER_PASSWORD: ${{ secrets.MAIL_USER_PASSWORD }}
+          MAIL_SMTP_AUTH: ${{ secrets.MAIL_SMTP_AUTH }}
+          MAIL_SMTP_STARTTLS_ENABLE: ${{ secrets.MAIL_SMTP_STARTTLS_ENABLE }}
+          MAIL_SMTP_STARTTLS_REQUIRED: ${{ secrets.MAIL_SMTP_STARTTLS_REQUIRED }}
+          MAIL_SMTP_CONNECTIONTIMEOUT: ${{ secrets.MAIL_SMTP_CONNECTIONTIMEOUT }}
+          MAIL_SMTP_TIMEOUT: ${{ secrets.MAIL_SMTP_TIMEOUT }}
+          MAIL_SMTP_WRITETIMEOUT: ${{ secrets.MAIL_SMTP_WRITETIMEOUT }}
+          MAIL_CODE_LENGTH: ${{ secrets.MAIL_CODE_LENGTH }}
+          MAIL_RANDOM_CODE: ${{ secrets.MAIL_RANDOM_CODE }}
+          MAIL_SUBJECT: ${{ secrets.MAIL_SUBJECT }}
+          MAIL_CONTENT: ${{ secrets.MAIL_CONTENT }}
+          JWT_SECRET_KEY_ACCESS: ${{ secrets.JWT_SECRET_KEY_ACCESS }}
+          JWT_SECRET_KEY_REFRESH: ${{ secrets.JWT_SECRET_KEY_REFRESH }}
+          JWT_EXPIRED_TIME_ACCESS: ${{ secrets.JWT_EXPIRED_TIME_ACCESS }}
+          JWT_EXPIRED_TIME_REFRESH: ${{ secrets.JWT_EXPIRED_TIME_REFRESH }}
+        run: ./gradlew test
+
+      # - name: Publish to GitHub Packages
+      #   run: ./gradlew publish
+      #   env:
+      #     USERNAME: ${{ github.actor }}
+      #     TOKEN: ${{ secrets.GITHUB_TOKEN }}
