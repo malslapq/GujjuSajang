@@ -26,8 +26,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +65,7 @@ public class JwtServiceTest {
         claims.put("id", 1L);
         claims.put("mail", "mail");
         claims.put("mailVerified", true);  // Boolean 값으로 설정
-        claims.put("role", MemberRole.MEMBER);
+        claims.put("memberRole", MemberRole.MEMBER.name());
     }
 
     @DisplayName("토큰 발급 성공")
@@ -97,6 +96,25 @@ public class JwtServiceTest {
         // then
         assertThatThrownBy(() -> jwtService.issueTokens(null))
                 .isInstanceOf(NullPointerException.class);
+    }
+
+    @DisplayName("토큰 재발급 성공")
+    @Test
+    void refreshTokens() {
+        //given
+        given(jwtParser.parseToken(any(), any()))
+                .willReturn(claims);
+        given(refreshTokenRedisRepository.getRefreshToken(anyLong()))
+                .willReturn(Optional.of("refreshToken"));
+        given(jwtIssuer.issureToken(any(), any())).willReturn(tokenInfo.getAccessToken(), tokenInfo.getRefreshToken());
+
+        //when
+        TokenInfo result = jwtService.refreshToken("refreshToken");
+
+        //then
+        assertThat(result.getAccessToken()).isEqualTo(tokenInfo.getAccessToken());
+        assertThat(result.getRefreshToken()).isEqualTo(tokenInfo.getRefreshToken());
+        assertThat(result.getPrefix()).isEqualTo(tokenInfo.getPrefix());
     }
 
     @DisplayName("토큰 재발급 실패 - 리프레시 토큰 없음")
