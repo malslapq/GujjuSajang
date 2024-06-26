@@ -129,7 +129,7 @@ public class MemberService {
     }
 
     // 회원 가져오기
-    private Member getMember(Long id) {
+    public Member getMember(Long id) {
         return memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_MEMBER));
     }
 
@@ -141,7 +141,7 @@ public class MemberService {
     }
 
     // 비밀번호 검증
-    private void matchPassword(String requestPassword, String encodedPassword) {
+    public void matchPassword(String requestPassword, String encodedPassword) {
         if (!passwordEncoder.matches(requestPassword, encodedPassword)) {
             throw new MemberException(ErrorCode.MISS_MATCH_PASSWORD);
         }

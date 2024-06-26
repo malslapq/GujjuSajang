@@ -19,6 +19,7 @@ public class JwtUtil {
     public static final String KEY_MAIL = "mail";
     public static final String KEY_MAIL_VERIFIED = "mailVerified";
     public static final String KEY_MEMBER_ROLE = "memberRole";
+    public static final String COOKIE_NAME = "accessToken";
 
     @Value("${jwt.secretKey.access}")
     private String accessKey;
