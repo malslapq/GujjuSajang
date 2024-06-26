@@ -127,9 +127,7 @@ public class OrderServiceTest {
                 .productId(1L)
                 .count(5)
                 .build();
-        cartDto = CartDto.builder()
-                .cartProductsDtos(new ArrayList<>())
-                .build();
+        cartDto = new CartDto();
         cartProductsDto = CartProductsDto.builder()
                 .productID(product.getId())
                 .name(product.getName())

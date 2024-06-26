@@ -65,20 +65,20 @@ public class MemberController {
     }
 
     // 상세 정보 조회
-    @GetMapping("/detail/{member-id}")
+    @GetMapping("/{member-id}/detail")
     public ResponseEntity<MemberUpdateDetailDto> getDetail(@PathVariable("member-id") long id) {
         return ResponseEntity.ok().body(memberService.getDetail(id));
     }
 
     // 정보 수정
-    @PatchMapping("/detail/{member-id}")
+    @PatchMapping("/{member-id}/detail")
     public ResponseEntity<MemberUpdateDetailDto> updateDetail(@PathVariable("member-id") Long id, @RequestBody @Valid MemberUpdateDetailDto memberUpdateDetailDto, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
         return ResponseEntity.ok().body(memberService.updateConsumer(id, tokenMemberInfo.getId(), memberUpdateDetailDto));
     }
 
     // 비밀번호 수정
-    @PatchMapping("/detail/{member-id}/password")
+    @PatchMapping("/{member-id}/detail/password")
     public ResponseEntity<MemberUpdatePasswordDto.Response> updatePassword(@PathVariable("member-id") Long id, @RequestBody @Valid MemberUpdatePasswordDto memberUpdatePasswordDto, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
         return ResponseEntity.ok().body(memberService.updatePassword(id, tokenMemberInfo.getId(), memberUpdatePasswordDto));

@@ -9,7 +9,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
 public class CartDto {
 
     private List<CartProductsDto> cartProductsDtos = new ArrayList<>();
