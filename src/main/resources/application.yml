@@ -1,3 +1,56 @@
 spring:
   application:
-    name: PyumPyum
+    name: GujjuSajang
+
+  profiles:
+    active: dev
+
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://localhost:3307/gujjusajang
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USER_NAME}
+    password: ${MAIL_USER_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE}
+            required: ${MAIL_SMTP_STARTTLS_REQUIRED}
+          connectiontimeout: ${MAIL_SMTP_CONNECTIONTIMEOUT}
+          timeout: ${MAIL_SMTP_TIMEOUT}
+          writetimeout: ${MAIL_SMTP_WRITETIMEOUT}
+    codeLength: ${MAIL_CODE_LENGTH}
+    subject: 회원가입 인증 메일입니다.
+    content: <a href="http://localhost:8080/member/mailVerified?id=
+    randomCode: ${MAIL_RANDOM_CODE}
+
+
+redis:
+  host: localhost
+  port: 6379
+
+jwt:
+  secretKey:
+    access: ${JWT_SECRET_KEY_ACCESS}
+    refresh: ${JWT_SECRET_KEY_REFRESH}
+  expired-time:
+    access: ${JWT_EXPIRED_TIME_ACCESS}
+    refresh: ${JWT_EXPIRED_TIME_REFRESH}
