@@ -1,0 +1,6 @@
+spring:
+  profiles:
+    active: core, auth
+
+server:
+  port: 8083

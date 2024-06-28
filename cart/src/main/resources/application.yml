@@ -1,0 +1,6 @@
+spring:
+  profiles:
+    active: core, redis
+
+server:
+  port: 8081
