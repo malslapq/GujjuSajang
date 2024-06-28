@@ -44,6 +44,8 @@ subprojects {
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
         implementation 'org.springframework.kafka:spring-kafka'
         implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     }
 
     dependencyManagement {
@@ -57,15 +59,4 @@ subprojects {
         useJUnitPlatform()
     }
 
-    // 공통 설정 파일을 각 모듈의 resources 디렉터리로 복사하는 작업 추가
-    tasks.register('copyCommonYml', Copy) {
-        from "${rootProject.projectDir}/application-core.yml"
-        into "${projectDir}/src/main/resources"
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        dependsOn copyCommonYml
-    }
-
-    processResources.dependsOn copyCommonYml
 }

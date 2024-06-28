@@ -1,6 +1,8 @@
 spring:
-  profiles:
-    active: core
+  config:
+    import:
+      - optional:classpath:config/application-core.yml
+      - optional:classpath:config/application-product.yml
 
 server:
-  port: 8082
+  port: 8086
