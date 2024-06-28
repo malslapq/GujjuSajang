@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: core, auth
+    active: core, redis, auth
 
 server:
   port: 8083

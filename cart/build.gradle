@@ -1,3 +1,5 @@
 dependencies {
-    implementation project(':core')
+    implementation project(path: ':core')
+    implementation project(path: ':redis')
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }

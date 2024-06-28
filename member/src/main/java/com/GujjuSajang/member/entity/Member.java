@@ -1,7 +1,7 @@
 package com.GujjuSajang.member.entity;
 
+import com.GujjuSajang.core.type.MemberRole;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
-import com.GujjuSajang.member.type.MemberRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

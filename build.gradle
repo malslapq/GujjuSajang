@@ -20,12 +20,6 @@ subprojects {
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
 
-    configurations {
-        compileOnly {
-            extendsFrom annotationProcessor
-        }
-    }
-
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
@@ -36,7 +30,6 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
         implementation 'org.springframework.boot:spring-boot-starter-web'
-        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
         compileOnly 'org.projectlombok:lombok:1.18.24'
         annotationProcessor 'org.projectlombok:lombok:1.18.24'
         runtimeOnly 'com.mysql:mysql-connector-j'
@@ -46,12 +39,11 @@ subprojects {
         testImplementation 'org.mockito:mockito-core:4.8.0'
         testImplementation 'org.mockito:mockito-junit-jupiter:4.8.0'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-        implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-        implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-        implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
         implementation 'org.mindrot:jbcrypt:0.4'
-        implementation 'org.springframework.boot:spring-boot-starter-mail'
+        implementation 'org.springframework.kafka:spring-kafka'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+        implementation 'org.springframework.kafka:spring-kafka'
+        implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     }
 
     dependencyManagement {
@@ -66,12 +58,12 @@ subprojects {
     }
 
     // 공통 설정 파일을 각 모듈의 resources 디렉터리로 복사하는 작업 추가
-    task copyCommonYml(type: Copy) {
+    tasks.register('copyCommonYml', Copy) {
         from "${rootProject.projectDir}/application-core.yml"
         into "${projectDir}/src/main/resources"
     }
 
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         dependsOn copyCommonYml
     }
 

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: core
+    active: core, redis, mail
 
 server:
   port: 8084

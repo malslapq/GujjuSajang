@@ -3,9 +3,9 @@ package com.GujjuSajang.cart.service;
 import com.GujjuSajang.cart.dto.CartDto;
 import com.GujjuSajang.cart.dto.CartProductsDto;
 import com.GujjuSajang.cart.dto.UpdateCartProductDto;
-import com.GujjuSajang.cart.exception.CartException;
-import com.GujjuSajang.cart.exception.ErrorCode;
 import com.GujjuSajang.cart.repository.CartRedisRepository;
+import com.GujjuSajang.core.exception.CartException;
+import com.GujjuSajang.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

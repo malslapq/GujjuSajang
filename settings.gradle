@@ -1,9 +1,3 @@
 rootProject.name = 'GujjuSajang'
 
-include 'core'
-include 'cart'
-include 'product'
-include 'redis'
-include 'member'
-include 'orders'
-include 'auth'
+include('core', 'auth', 'cart', 'product', 'redis', 'member', 'orders')
