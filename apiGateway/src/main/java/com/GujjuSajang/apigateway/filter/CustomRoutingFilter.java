@@ -12,6 +12,8 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import static com.GujjuSajang.apigateway.filter.JwtFilter.TOKEN_PATH;
+
 @Order(2)
 @Component
 @RequiredArgsConstructor
@@ -26,6 +28,9 @@ public class CustomRoutingFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String requestURI = exchange.getRequest().getPath().toString();
+        if (requestURI.startsWith(TOKEN_PATH)) {
+            return chain.filter(exchange);
+        }
         TokenMemberInfo tokenMemberInfo = (TokenMemberInfo) exchange.getAttributes().get("tokenMemberInfo");
 
         String serviceUri = getServiceUri(requestURI);

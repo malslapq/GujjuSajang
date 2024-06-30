@@ -10,7 +10,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -21,21 +20,17 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class JwtFilter implements WebFilter {
 
-    private static final String LOGIN_PATH = "/login";
+    public static final String TOKEN_PATH = "/token";
+    private static final String LOGIN_PATH = "/member/login";
     private static final String BEARER_PREFIX = "Bearer ";
     private final JwtService jwtService;
-    private final WebClient.Builder webClientBuilder;
-    private static final String MEMBER_SERVICE = "MEMBER";
-    private static final String ORDER_SERVICE = "ORDERS";
-    private static final String PRODUCT_SERVICE = "PRODUCT";
-    private static final String CART_SERVICE = "CART";
 
     // dodilter와 같은 부분 근데 Mono는 비동기 처리임
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // 로그인시에는 검증 안함
         String requestURI = exchange.getRequest().getPath().toString();
-        if (requestURI.startsWith(LOGIN_PATH)) {
+        if (requestURI.startsWith(LOGIN_PATH) || requestURI.startsWith(TOKEN_PATH)) {
             return chain.filter(exchange);
         }
 

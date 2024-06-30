@@ -1,7 +1,7 @@
 package com.GujjuSajang.apigateway.service;
 
 
-import com.GujjuSajang.apigateway.Repository.RefreshTokenRedisRepository;
+import com.GujjuSajang.apigateway.repository.RefreshTokenRedisRepository;
 import com.GujjuSajang.apigateway.dto.TokenInfo;
 import com.GujjuSajang.apigateway.dto.TokenMemberInfo;
 import com.GujjuSajang.apigateway.exception.ErrorCode;
@@ -28,22 +28,22 @@ public class JwtService {
 
     // 토큰 발급
     @Transactional
-    public TokenInfo issueTokens(TokenMemberInfo userInfo) {
+    public TokenInfo issueTokens(TokenMemberInfo memberInfo) {
 
         // 엑세스 토큰 발급
         String accessToken = jwtIssuer.issureToken(
-                userInfo.createClaims(jwtUtil.getAccessTokenExpired()),
+                memberInfo.createClaims(jwtUtil.getAccessTokenExpired()),
                 jwtUtil.getEncodedAccessKey()
         );
 
         // 리프레시 토큰 발급
         String refreshToken = jwtIssuer.issureToken(
-                userInfo.createClaims(jwtUtil.getRefreshTokenExpired()),
+                memberInfo.createClaims(jwtUtil.getRefreshTokenExpired()),
                 jwtUtil.getEncodedRefreshKey()
         );
 
         // 리프레시 토큰 레디스에 저장
-        refreshTokenRedisRepository.save(userInfo.getId(), refreshToken, jwtUtil.getRefreshTokenExpired());
+        refreshTokenRedisRepository.save(memberInfo.getId(), refreshToken, jwtUtil.getRefreshTokenExpired());
 
         // 토큰 반환
         return TokenInfo.builder()
@@ -66,8 +66,18 @@ public class JwtService {
         // 요청시 받은 리프레시토큰과 레디스에서 가져온 리프레시토큰이 같은지 검증
         validateRefreshToken(refreshToken, getRefreshToken);
 
+        TokenMemberInfo memberInfo = parseAccessToken(refreshToken);
+
+        String accessToken = jwtIssuer.issureToken(
+                memberInfo.createClaims(jwtUtil.getAccessTokenExpired()),
+                jwtUtil.getEncodedAccessKey()
+        );
+
         // 새 토큰 발급
-        return issueTokens(TokenMemberInfo.from(claims));
+        return TokenInfo.builder()
+                .accessToken(accessToken)
+                .prefix(BEARER_PREFIX)
+                .build();
     }
 
     // 리프레시 토큰 검증
@@ -83,6 +93,12 @@ public class JwtService {
         return TokenMemberInfo.from(
                 jwtParser.parseToken(accessToken, jwtUtil.getEncodedAccessKey()
                 )
+        );
+    }
+
+    public TokenMemberInfo parseRefreshToken(String refreshToken) {
+        return TokenMemberInfo.from(
+                jwtParser.parseToken(refreshToken, jwtUtil.getEncodedRefreshKey())
         );
     }
 

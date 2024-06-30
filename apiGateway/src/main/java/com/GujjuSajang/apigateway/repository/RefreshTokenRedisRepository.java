@@ -1,4 +1,4 @@
-package com.GujjuSajang.apigateway.Repository;
+package com.GujjuSajang.apigateway.repository;
 
 import com.GujjuSajang.apigateway.exception.ErrorCode;
 import com.GujjuSajang.apigateway.exception.RedisException;
