@@ -10,6 +10,7 @@ public enum ErrorCode {
 
     // api-gateway 관련
     INVALID_SERVICE_URI(HttpStatus.BAD_REQUEST, "잘못된 요청 URI 입니다"),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 문제"),
 
     // 레디스 관련
     REDIS_OPERATION_FAILURE(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 작업 실패"),

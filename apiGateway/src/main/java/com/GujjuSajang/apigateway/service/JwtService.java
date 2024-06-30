@@ -66,7 +66,7 @@ public class JwtService {
         // 요청시 받은 리프레시토큰과 레디스에서 가져온 리프레시토큰이 같은지 검증
         validateRefreshToken(refreshToken, getRefreshToken);
 
-        TokenMemberInfo memberInfo = parseAccessToken(refreshToken);
+        TokenMemberInfo memberInfo = parseRefreshToken(refreshToken);
 
         String accessToken = jwtIssuer.issureToken(
                 memberInfo.createClaims(jwtUtil.getAccessTokenExpired()),
@@ -85,7 +85,6 @@ public class JwtService {
         if (!refreshToken.equals(getRefreshToken)) {
             throw new TokenException(ErrorCode.INVALID_TOKEN);
         }
-
     }
 
     // 토큰 파싱
@@ -101,6 +100,5 @@ public class JwtService {
                 jwtParser.parseToken(refreshToken, jwtUtil.getEncodedRefreshKey())
         );
     }
-
 
 }

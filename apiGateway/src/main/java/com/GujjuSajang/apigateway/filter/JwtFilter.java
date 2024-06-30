@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 public class JwtFilter implements WebFilter {
 
     public static final String TOKEN_PATH = "/token";
-    private static final String LOGIN_PATH = "/member/login";
+    public static final String LOGIN_PATH = "/member/login";
     private static final String BEARER_PREFIX = "Bearer ";
     private final JwtService jwtService;
 
