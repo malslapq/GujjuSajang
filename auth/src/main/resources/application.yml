@@ -1,9 +1,0 @@
-spring:
-  config:
-    import:
-      - optional:classpath:config/application-core.yml
-      - optional:classpath:config/application-redis.yml
-      - optional:classpath:config/application-auth.yml
-
-server:
-  port: 8082

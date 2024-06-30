@@ -1,4 +1,4 @@
-package com.GujjuSajang.core.dto;
+package com.GujjuSajang.apigateway.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
