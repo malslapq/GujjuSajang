@@ -40,11 +40,11 @@ public class CustomRoutingFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String requestURI = exchange.getRequest().getPath().toString(); // 요청 URI 가져오기
 
-        if (requestURI.startsWith(TOKEN_PATH)) { //
-            return chain.filter(exchange); //
+        if (requestURI.startsWith(TOKEN_PATH)) {
+            return chain.filter(exchange);
         }
 
-        if (requestURI.startsWith(LOGIN_PATH)) { //
+        if (requestURI.startsWith(LOGIN_PATH)) {
             return loginRequest(exchange); // 로그인 요청 처리
         }
 
@@ -76,14 +76,14 @@ public class CustomRoutingFilter implements WebFilter {
         TokenMemberInfo tokenMemberInfo = (TokenMemberInfo) exchange.getAttributes().get("tokenMemberInfo"); // TokenMemberInfo 가져오기
         String serviceUri = getServiceUri(requestURI); // 서비스 URI 가져오기
         return webClientBuilder.build()
-                .post() // POST 요청 설정
-                .uri(serviceUri) // 서비스 URI 설정
-                .bodyValue(tokenMemberInfo) // 요청 본문 설정
+                .post() // POST 요청
+                .uri(serviceUri)
+                .bodyValue(tokenMemberInfo) // 요청 바디 설정
                 .retrieve() // 요청 보내기
-                .bodyToMono(String.class) // 응답 본문을 문자열로 변환
+                .bodyToMono(String.class) // 응답 바디 문자열로
                 .flatMap(responseBody -> {
-                    exchange.getResponse().getHeaders().add("Content-Type", "application/json"); // 응답 헤더 설정
-                    return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(responseBody.getBytes()))); // 응답 본문 설정
+                    exchange.getResponse().getHeaders().add("Content-Type", "application/json"); // 응답 헤더 json으로 설정
+                    return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(responseBody.getBytes()))); // 응답 바디
                 });
     }
 
@@ -100,11 +100,11 @@ public class CustomRoutingFilter implements WebFilter {
 
     private void createAccessTokenCookie(String accessToken, ServerHttpResponse response) {
         ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, accessToken)
-                .httpOnly(true) // HTTP 전용 설정
-                .secure(true) // 보안 설정
-                .path("/") // 경로 설정
-                .maxAge(Duration.ofMinutes(30)) // 유효 기간 설정
-                .build();// 쿠키 빌드
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMinutes(30)) // 유효기간 30분
+                .build();
         response.addCookie(cookie);
     }
 
