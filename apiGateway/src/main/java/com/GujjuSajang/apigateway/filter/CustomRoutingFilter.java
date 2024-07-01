@@ -8,15 +8,19 @@ import com.GujjuSajang.apigateway.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static com.GujjuSajang.apigateway.filter.JwtFilter.LOGIN_PATH;
@@ -55,20 +59,33 @@ public class CustomRoutingFilter implements WebFilter {
     private Mono<Void> loginRequest(ServerWebExchange exchange) {
         String serviceUri = getServiceUri(exchange.getRequest().getPath().toString());
         ServerHttpResponse response = exchange.getResponse();
-        return webClientBuilder.build().post().uri(serviceUri).bodyValue(exchange.getRequest().getBody()).retrieve() // 들어온 요청 그대로 member쪽으로 보냄
-                .bodyToMono(TokenMemberInfo.class)
-                .flatMap(tokenMemberInfo -> {
-                    TokenInfo tokenInfo = jwtService.issueTokens(tokenMemberInfo);
-                    createAccessTokenCookie(tokenInfo.getAccessToken(), response);
-                    exchange.getResponse().getHeaders().add("Content-Type", "application/json");
-                    try {
-                        String jsonResponse = objectMapper.writeValueAsString(tokenInfo); // TokenInfo를 JSON 문자열로 변환
-                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse()
-                                .bufferFactory()
-                                .wrap(jsonResponse.getBytes()))); // 응답 본문 설정
-                    } catch (Exception e) {
-                        return Mono.error(new ApiGatewayException(ErrorCode.INTERNAL_SERVER_ERROR, e));
-                    }
+        return DataBufferUtils.join(exchange.getRequest().getBody())
+                .flatMap(dataBuffer -> {
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    DataBufferUtils.release(dataBuffer);
+                    String body = new String(bytes, StandardCharsets.UTF_8);
+
+                    return webClientBuilder.build()
+                            .post()
+                            .uri(serviceUri)
+                            .contentType(MediaType.APPLICATION_JSON) // 콘텐츠 타입 설정
+                            .body(BodyInserters.fromValue(body))
+                            .retrieve() // 들어온 요청 그대로 member쪽으로 보냄
+                            .bodyToMono(TokenMemberInfo.class)
+                            .flatMap(tokenMemberInfo -> {
+                                TokenInfo tokenInfo = jwtService.issueTokens(tokenMemberInfo);
+                                createAccessTokenCookie(tokenInfo.getAccessToken(), response);
+                                exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON); // 응답 헤더 json으로 설정
+                                try {
+                                    String jsonResponse = objectMapper.writeValueAsString(tokenInfo); // TokenInfo를 JSON 문자열로 변환
+                                    return exchange.getResponse().writeWith(Mono.just(exchange.getResponse()
+                                            .bufferFactory()
+                                            .wrap(jsonResponse.getBytes()))); // 응답 본문 설정
+                                } catch (Exception e) {
+                                    return Mono.error(new ApiGatewayException(ErrorCode.INTERNAL_SERVER_ERROR, e));
+                                }
+                            });
                 });
     }
 
@@ -78,11 +95,12 @@ public class CustomRoutingFilter implements WebFilter {
         return webClientBuilder.build()
                 .post() // POST 요청
                 .uri(serviceUri)
+                .contentType(MediaType.APPLICATION_JSON) // 콘텐츠 타입
                 .bodyValue(tokenMemberInfo) // 요청 바디 설정
                 .retrieve() // 요청 보내기
                 .bodyToMono(String.class) // 응답 바디 문자열로
                 .flatMap(responseBody -> {
-                    exchange.getResponse().getHeaders().add("Content-Type", "application/json"); // 응답 헤더 json으로 설정
+                    exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON); // 응답 헤더 json으로 설정
                     return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(responseBody.getBytes()))); // 응답 바디
                 });
     }

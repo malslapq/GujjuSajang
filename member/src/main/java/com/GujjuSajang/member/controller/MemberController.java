@@ -31,10 +31,8 @@ public class MemberController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<TokenInfo> login(@RequestBody @Valid MemberLoginDto memberLoginDto, HttpServletResponse response) {
-        TokenInfo tokenInfo = memberService.login(memberLoginDto);
-        addCookie(response, tokenInfo.getAccessToken(), 30);
-        return ResponseEntity.ok().body(tokenInfo);
+    public ResponseEntity<TokenMemberInfo> login(@RequestBody @Valid MemberLoginDto memberLoginDto, HttpServletResponse response) {
+        return ResponseEntity.ok().body(memberService.login(memberLoginDto));
     }
 
     // 로그아웃

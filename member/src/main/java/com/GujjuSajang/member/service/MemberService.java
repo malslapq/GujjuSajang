@@ -1,6 +1,7 @@
 package com.GujjuSajang.member.service;
 
 import com.GujjuSajang.core.dto.TokenInfo;
+import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.MemberException;
 import com.GujjuSajang.member.dto.MemberLoginDto;
@@ -48,15 +49,19 @@ public class MemberService {
     }
 
     // 로그인
-    public TokenInfo login(MemberLoginDto memberLoginDto) {
-
+    public TokenMemberInfo login(MemberLoginDto memberLoginDto) {
         Member member = memberRepository.findByMail(memberLoginDto.getMail()).orElseThrow(() ->
                 new MemberException(ErrorCode.NOT_FOUND_MEMBER));
 
         passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword());
         matchPassword(memberLoginDto.getPassword(), member.getPassword());
 
-        return new TokenInfo().builder().build();
+        return TokenMemberInfo.builder()
+                .id(member.getId())
+                .mail(member.getMail())
+                .mailVerified(member.isMailVerified())
+                .role(member.getRole())
+                .build();
 
     }
 
