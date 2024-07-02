@@ -1,11 +1,12 @@
 package com.GujjuSajang.apigateway.service;
 
 
-import com.GujjuSajang.apigateway.repository.RefreshTokenRedisRepository;
+import com.GujjuSajang.apigateway.dto.RefreshTokenDto;
 import com.GujjuSajang.apigateway.dto.TokenInfo;
 import com.GujjuSajang.apigateway.dto.TokenMemberInfo;
 import com.GujjuSajang.apigateway.exception.ErrorCode;
 import com.GujjuSajang.apigateway.exception.TokenException;
+import com.GujjuSajang.apigateway.repository.RefreshTokenRedisRepository;
 import com.GujjuSajang.apigateway.util.JwtIssuer;
 import com.GujjuSajang.apigateway.util.JwtParser;
 import com.GujjuSajang.apigateway.util.JwtUtil;
@@ -21,10 +22,10 @@ import static com.GujjuSajang.apigateway.util.JwtUtil.KEY_ID;
 @RequiredArgsConstructor
 public class JwtService {
 
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final JwtParser jwtParser;
     private final JwtIssuer jwtIssuer;
     private final JwtUtil jwtUtil;
-    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     // 토큰 발급
     @Transactional
@@ -55,18 +56,18 @@ public class JwtService {
 
     // 토큰 재발급
     @Transactional
-    public TokenInfo refreshToken(String refreshToken) {
+    public TokenInfo refreshToken(RefreshTokenDto refreshTokenDto) {
         // 리프레시토큰 파싱
-        Claims claims = jwtParser.parseToken(refreshToken, jwtUtil.getEncodedRefreshKey());
+        Claims claims = jwtParser.parseToken(refreshTokenDto.getRefreshToken(), jwtUtil.getEncodedRefreshKey());
 
         // 레디스에 저장되있는 리프레시토큰 가져오되 없을 경우 에러 던지기
         String getRefreshToken = refreshTokenRedisRepository.getRefreshToken(claims.get(KEY_ID, Long.class))
                 .orElseThrow(() -> new TokenException(ErrorCode.INVALID_TOKEN));
 
         // 요청시 받은 리프레시토큰과 레디스에서 가져온 리프레시토큰이 같은지 검증
-        validateRefreshToken(refreshToken, getRefreshToken);
+        validateRefreshToken(refreshTokenDto.getRefreshToken(), getRefreshToken);
 
-        TokenMemberInfo memberInfo = parseRefreshToken(refreshToken);
+        TokenMemberInfo memberInfo = parseRefreshToken(refreshTokenDto.getRefreshToken());
 
         String accessToken = jwtIssuer.issureToken(
                 memberInfo.createClaims(jwtUtil.getAccessTokenExpired()),

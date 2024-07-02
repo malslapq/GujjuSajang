@@ -22,6 +22,7 @@ public class JwtFilter implements WebFilter {
 
     public static final String TOKEN_PATH = "/token";
     public static final String LOGIN_PATH = "/member/login";
+    public static final String SIGNUP_PATH = "/member/signup";
     private static final String BEARER_PREFIX = "Bearer ";
     private final JwtService jwtService;
 
@@ -30,7 +31,7 @@ public class JwtFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // 로그인시에는 검증 안함
         String requestURI = exchange.getRequest().getPath().toString();
-        if (requestURI.startsWith(LOGIN_PATH) || requestURI.startsWith(TOKEN_PATH)) {
+        if (requestURI.startsWith(LOGIN_PATH) || requestURI.startsWith(TOKEN_PATH) || requestURI.startsWith(SIGNUP_PATH)) {
             return chain.filter(exchange);
         }
 
@@ -54,6 +55,7 @@ public class JwtFilter implements WebFilter {
             throw new TokenException(ErrorCode.MISSING_AUTHORIZATION_HEADER);
         }
         if (!bearerToken.startsWith(BEARER_PREFIX)) {
+            System.out.println(bearerToken);
             throw new TokenException(ErrorCode.MALFORMED_TOKEN);
         }
         return bearerToken.substring(BEARER_PREFIX.length());

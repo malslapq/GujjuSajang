@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
-    private static final String  COOKIE_NAME = "accessToken";
 
     // 회원가입
     @PostMapping("/signup")
@@ -40,7 +39,6 @@ public class MemberController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 //        TokenMemberInfo tokenMemberInfo = getTokenMemberInfo(request);
 //        memberService.logout(tokenMemberInfo.getId());
-        addCookie(response, "", 0);
         return ResponseEntity.ok().body("로그아웃 성공");
     }
 
@@ -53,10 +51,10 @@ public class MemberController {
 //    }
 
     // 메일 검증
-    @GetMapping("/mailVerified")
-    public void mailVerified(@RequestParam Long id, @RequestParam String code) {
-        memberService.verifiedMail(id, code);
-    }
+//    @GetMapping("/mailVerified")
+//    public void mailVerified(@RequestParam Long id, @RequestParam String code) {
+//        memberService.verifiedMail(id, code);
+//    }
 
     // 상세 정보 조회
     @GetMapping("/{member-id}/detail")
@@ -78,13 +76,6 @@ public class MemberController {
 //        return ResponseEntity.ok().body(memberService.updatePassword(id, tokenMemberInfo.getId(), memberUpdatePasswordDto));
 //    }
 
-    private void addCookie(HttpServletResponse response, String accessToken, int expiryMinutes) {
-        Cookie cookie = new Cookie(COOKIE_NAME, accessToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * expiryMinutes);
-        response.addCookie(cookie);
-    }
+
 
 }

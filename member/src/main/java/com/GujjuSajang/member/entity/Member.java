@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class Member {
 
     @Id
@@ -36,7 +39,8 @@ public class Member {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private MemberRole role;
-    @Column(updatable = false, nullable = false)
+    @CreatedDate
+    @Column
     private LocalDateTime createAt;
     @LastModifiedDate
     @Column

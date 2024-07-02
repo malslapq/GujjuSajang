@@ -17,6 +17,7 @@ public class MailVerifiedRedisRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+
     public void save(Long id, String code) {
 
         try {

@@ -1,31 +1,37 @@
 package com.GujjuSajang.member.service;
 
-import com.GujjuSajang.core.dto.TokenInfo;
+import com.GujjuSajang.core.dto.CreateMemberEventDto;
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.MemberException;
+import com.GujjuSajang.core.service.EventProducerService;
 import com.GujjuSajang.member.dto.MemberLoginDto;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
 import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
 import com.GujjuSajang.member.entity.Member;
-import com.GujjuSajang.member.repository.MailVerifiedRedisRepository;
 import com.GujjuSajang.member.repository.MemberRepository;
 import com.GujjuSajang.member.util.PasswordEncoder;
-import com.GujjuSajang.member.util.mail.MailSender;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
+    @Value("${spring.mail.randomCode}")
+    private String CHARACTERS;
+    @Value("${spring.mail.codeLength}")
+    private int codeLength;
+
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MailSender mailSender;
-    private final MailVerifiedRedisRepository mailVerifiedRedisRepository;
+    private final EventProducerService eventProducerService;
 
     // 회원 가입
     @Transactional
@@ -40,10 +46,12 @@ public class MemberService {
             throw new MemberException(ErrorCode.ALREADY_MAIL, e);
         }
 
-        mailVerifiedRedisRepository.save(member.getId(), mailSender.sendVerifiedMail(member.getId(), member.getMail()));
-
-        // 장바구니 서비스에 이벤트 생성
-//        cartRedisRepository.save(member.getId(), new CartDto());
+        eventProducerService.sendEvent("create-member",
+                CreateMemberEventDto.builder()
+                        .id(member.getId())
+                        .mail(member.getMail())
+                        .code(getVerifiedCode(codeLength))
+                        .build());
 
         return MemberSignUpDto.from(member);
     }
@@ -65,22 +73,17 @@ public class MemberService {
 
     }
 
-    // 로그아웃
-    public void logout(Long id) {
-        //auth 서비스에 이벤트 생성
-    }
-
-    // 메일 인증
-    @Transactional
-    public void verifiedMail(Long id, String code) {
-        Member member = getMember(id);
-        String getCode = mailVerifiedRedisRepository.getCode(id).orElseThrow(() -> new MemberException(ErrorCode.INVALID_CODE));
-
-        if (code.equals(getCode)) {
-            member.changeMailVerified(true);
-            mailVerifiedRedisRepository.delete(id);
-        }
-    }
+      // 메일 인증
+//    @Transactional
+//    public void verifiedMail(Long id, String code) {
+//        Member member = getMember(id);
+//        String getCode = mailVerifiedRedisRepository.getCode(id).orElseThrow(() -> new MemberException(ErrorCode.INVALID_CODE));
+//
+//        if (code.equals(getCode)) {
+//            member.changeMailVerified(true);
+//            mailVerifiedRedisRepository.delete(id);
+//        }
+//    }
 
     // 회원 상세 조회
     @Transactional(readOnly = true)
@@ -134,5 +137,15 @@ public class MemberService {
             throw new MemberException(ErrorCode.MISS_MATCH_PASSWORD);
         }
     }
+
+    private String getVerifiedCode(int codeLength) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder code = new StringBuilder(codeLength);
+        for (int i = 0; i < codeLength; i++) {
+            code.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+        }
+        return code.toString();
+    }
+
 
 }

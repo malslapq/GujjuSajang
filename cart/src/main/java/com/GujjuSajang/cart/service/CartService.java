@@ -4,16 +4,27 @@ import com.GujjuSajang.cart.dto.CartDto;
 import com.GujjuSajang.cart.dto.CartProductsDto;
 import com.GujjuSajang.cart.dto.UpdateCartProductDto;
 import com.GujjuSajang.cart.repository.CartRedisRepository;
+import com.GujjuSajang.core.dto.CreateMemberEventDto;
 import com.GujjuSajang.core.exception.CartException;
 import com.GujjuSajang.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CartService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CartService.class);
     private final CartRedisRepository cartRedisRepository;
+
+    @KafkaListener(topics = {"create-member"}, groupId = "createCart")
+    public void createCart(CreateMemberEventDto createMemberEventDto) {
+        logger.info("Received CreateMemberEventDto: {}", createMemberEventDto);
+        cartRedisRepository.save(createMemberEventDto.getId(), new CartDto());
+    }
 
     public CartDto addCartProduct(Long memberId, Long tokenMemberId, CartProductsDto cartProductsDto) {
         CartDto cartDto = getCart(memberId, tokenMemberId);
