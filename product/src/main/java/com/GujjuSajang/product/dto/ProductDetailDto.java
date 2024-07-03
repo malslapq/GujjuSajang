@@ -18,7 +18,7 @@ public class ProductDetailDto {
     private String description;
     private int count;
 
-    public static ProductDetailDto from(Product product, Stock stock) {
+    public static ProductDetailDto of(Product product, Stock stock) {
         return ProductDetailDto.builder()
                 .id(product.getId())
                 .sellerId(product.getSellerId()) // Assuming seller is an entity

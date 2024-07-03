@@ -1,5 +1,6 @@
 package com.GujjuSajang.member.entity;
 
+import com.GujjuSajang.core.entity.BaseTimeEntity;
 import com.GujjuSajang.core.type.MemberRole;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
 import jakarta.persistence.*;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-public class Member {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,12 +40,6 @@ public class Member {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private MemberRole role;
-    @CreatedDate
-    @Column
-    private LocalDateTime createAt;
-    @LastModifiedDate
-    @Column
-    private LocalDateTime updateAt;
 
     public void changeMailVerified(boolean verified) {
         this.mailVerified = verified;

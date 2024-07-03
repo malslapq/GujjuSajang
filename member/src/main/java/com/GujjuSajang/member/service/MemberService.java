@@ -10,11 +10,11 @@ import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
 import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
 import com.GujjuSajang.member.entity.Member;
+import com.GujjuSajang.member.repository.MailVerifiedRedisRepository;
 import com.GujjuSajang.member.repository.MemberRepository;
 import com.GujjuSajang.member.util.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +32,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final EventProducerService eventProducerService;
+    private final MailVerifiedRedisRepository mailVerifiedRedisRepository;
 
     // 회원 가입
     @Transactional
@@ -40,18 +41,15 @@ public class MemberService {
         String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
         Member member;
 
-        try {
-            member = memberRepository.save(Member.from(memberSignUpDto, encodedPassword));
-        } catch (DataIntegrityViolationException e) {
-            throw new MemberException(ErrorCode.ALREADY_MAIL, e);
-        }
+        member = memberRepository.save(Member.from(memberSignUpDto, encodedPassword));
 
         eventProducerService.sendEvent("create-member",
                 CreateMemberEventDto.builder()
                         .id(member.getId())
                         .mail(member.getMail())
                         .code(getVerifiedCode(codeLength))
-                        .build());
+                        .build()
+        );
 
         return MemberSignUpDto.from(member);
     }
@@ -70,32 +68,29 @@ public class MemberService {
                 .mailVerified(member.isMailVerified())
                 .role(member.getRole())
                 .build();
-
     }
 
-      // 메일 인증
-//    @Transactional
-//    public void verifiedMail(Long id, String code) {
-//        Member member = getMember(id);
-//        String getCode = mailVerifiedRedisRepository.getCode(id).orElseThrow(() -> new MemberException(ErrorCode.INVALID_CODE));
-//
-//        if (code.equals(getCode)) {
-//            member.changeMailVerified(true);
-//            mailVerifiedRedisRepository.delete(id);
-//        }
-//    }
+    // 메일 인증
+    @Transactional
+    public void verifiedMail(Long id, String code) {
+        Member member = getMember(id);
+        String getCode = mailVerifiedRedisRepository.getCode(id).orElseThrow(() -> new MemberException(ErrorCode.INVALID_CODE));
+
+        if (code.equals(getCode)) {
+            member.changeMailVerified(true);
+            mailVerifiedRedisRepository.delete(id);
+        }
+    }
 
     // 회원 상세 조회
     @Transactional(readOnly = true)
-    public MemberUpdateDetailDto getDetail(long id) {
-        Member member = getMember(id);
-        return MemberUpdateDetailDto.from(member);
+    public MemberUpdateDetailDto getDetail(Long id) {
+        return MemberUpdateDetailDto.from(getMember(id));
     }
 
     // 회원 정보 수정
     @Transactional
-    public MemberUpdateDetailDto updateConsumer(Long id, Long tokenId, MemberUpdateDetailDto memberUpdateDetailDto) {
-        validateMemberId(tokenId, id);
+    public MemberUpdateDetailDto updateConsumer(Long id, MemberUpdateDetailDto memberUpdateDetailDto) {
         Member member = getMember(id);
         matchPassword(memberUpdateDetailDto.getPassword(), member.getPassword());
         member.changeAddressAndPhone(memberUpdateDetailDto.getAddress(), memberUpdateDetailDto.getPhone());
@@ -104,8 +99,7 @@ public class MemberService {
 
     // 비밀번호 변경
     @Transactional
-    public MemberUpdatePasswordDto.Response updatePassword(Long id, Long tokenId, MemberUpdatePasswordDto memberUpdatePasswordDto) {
-        validateMemberId(id, tokenId);
+    public MemberUpdatePasswordDto.Response updatePassword(Long id, MemberUpdatePasswordDto memberUpdatePasswordDto) {
         Member member = getMember(id);
         matchPassword(memberUpdatePasswordDto.getCurPassword(), member.getPassword());
         member.changePassword(passwordEncoder.encode(memberUpdatePasswordDto.getNewPassword()));
@@ -124,13 +118,6 @@ public class MemberService {
         return memberRepository.findById(id).orElseThrow(() -> new MemberException(ErrorCode.NOT_FOUND_MEMBER));
     }
 
-    // id 검증
-    public static void validateMemberId(Long memberId, Long tokenId) {
-        if (!memberId.equals(tokenId)) {
-            throw new MemberException(ErrorCode.MISS_MATCH_MEMBER);
-        }
-    }
-
     // 비밀번호 검증
     public void matchPassword(String requestPassword, String encodedPassword) {
         if (!passwordEncoder.matches(requestPassword, encodedPassword)) {
@@ -146,6 +133,5 @@ public class MemberService {
         }
         return code.toString();
     }
-
 
 }

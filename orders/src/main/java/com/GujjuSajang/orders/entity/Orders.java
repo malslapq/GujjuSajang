@@ -1,10 +1,13 @@
 package com.GujjuSajang.orders.entity;
 
+import com.GujjuSajang.core.dto.CartDto;
+import com.GujjuSajang.core.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
@@ -14,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Getter
-public class Orders {
+public class Orders extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,18 +26,13 @@ public class Orders {
     private Long memberId;
     @Column(nullable = false)
     private int totalPrice;
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createAt;
-    @LastModifiedDate
-    @Column
-    private LocalDateTime updateAt;
 
-//    public static Orders from(Long memberId, CartDto cartDto) {
-//        return Orders.builder()
-//                .memberId(memberId)
-//                .totalPrice(cartDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum())
-//                .build();
-//    }
+    public static Orders of(Long memberId, CartDto cartDto) {
+        return Orders.builder()
+                .memberId(memberId)
+                .totalPrice(cartDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum())
+                .build();
+    }
 
 
 }

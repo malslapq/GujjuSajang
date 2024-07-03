@@ -1,5 +1,7 @@
 package com.GujjuSajang.product.controller;
 
+import com.GujjuSajang.core.dto.TokenMemberInfo;
+import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.product.dto.ProductDetailDto;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.service.ProductService;
@@ -17,27 +19,21 @@ public class ProductController {
     private final ProductService productService;
 
     // 제품 등록
-    @PostMapping("/product/{seller-id}")
-    public ResponseEntity<ProductDetailDto> createProduct(
-            @PathVariable("seller-id") Long sellerId,
-            @RequestBody ProductDetailDto productDetailDto,
-            HttpServletRequest request) {
-        return ResponseEntity.ok(productService.createProduct(sellerId, productDetailDto));
+    @PostMapping
+    public ResponseEntity<ProductDetailDto> createProduct(@RequestBody ProductDetailDto productDetailDto, HttpServletRequest request) {
+        TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
+        return ResponseEntity.ok(productService.createProduct(tokenMemberInfo, productDetailDto));
     }
 
     // 제품 상세 조회
-    @GetMapping("/product/{product-id}")
-    public ResponseEntity<ProductDetailDto> getProduct(@PathVariable("product-id") long id) {
-        return ResponseEntity.ok(productService.getProduct(id));
+    @GetMapping("/{product-id}")
+    public ResponseEntity<ProductDetailDto> getProduct(@PathVariable("product-id") Long productId) {
+        return ResponseEntity.ok(productService.getProduct(productId));
     }
 
     // 제품 검색
-    @GetMapping("/products")
-    public ResponseEntity<ProductPageDto> getProducts(
-            @RequestParam int page,
-            @RequestParam int size,
-            @RequestParam String keyword,
-            HttpServletRequest request) {
+    @GetMapping("/list")
+    public ResponseEntity<ProductPageDto> getProducts(@RequestParam int page, @RequestParam int size, @RequestParam String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(productService.getProducts(pageable, keyword));
     }

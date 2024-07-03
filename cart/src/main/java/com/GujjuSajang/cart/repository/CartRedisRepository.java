@@ -1,6 +1,6 @@
 package com.GujjuSajang.cart.repository;
 
-import com.GujjuSajang.cart.dto.CartDto;
+import com.GujjuSajang.core.dto.CartDto;
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.RedisException;
 import lombok.RequiredArgsConstructor;

@@ -1,5 +1,6 @@
 package com.GujjuSajang.product.stock.Entity;
 
+import com.GujjuSajang.core.entity.BaseTimeEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Stock {
+public class Stock extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +25,6 @@ public class Stock {
 
     public void updateCount(int count) {
         this.count += count;
-    }
-
-    public void changeCount(int count) {
-        this.count = count;
     }
 
 }

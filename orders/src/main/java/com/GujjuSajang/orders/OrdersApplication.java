@@ -2,8 +2,12 @@ package com.GujjuSajang.orders;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+@ComponentScan(basePackages = {"com.GujjuSajang.orders", "com.GujjuSajang.core"})
 @SpringBootApplication
+@EnableJpaAuditing
 public class OrdersApplication {
 
 	public static void main(String[] args) {

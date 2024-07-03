@@ -1,64 +1,80 @@
 package com.GujjuSajang.apigateway.filter;
 
-import com.GujjuSajang.apigateway.dto.RequestHandlerDto;
-import com.GujjuSajang.apigateway.exception.ApiGatewayException;
-import com.GujjuSajang.apigateway.exception.ErrorCode;
-import com.GujjuSajang.apigateway.handler.RequestHandler;
-import com.GujjuSajang.apigateway.handler.RequestHandlerFactory;
+import com.GujjuSajang.apigateway.dto.TokenInfo;
+import com.GujjuSajang.apigateway.dto.TokenMemberInfo;
+import com.GujjuSajang.apigateway.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-
-import static com.GujjuSajang.apigateway.filter.JwtFilter.TOKEN_PATH;
 
 @Order(2)
 @Component
 @RequiredArgsConstructor
 public class CustomRoutingFilter implements WebFilter {
 
-    public static final String MEMBER_SERVICE = "MEMBER";
-    public static final String OTHER_SERVICE = "OTHER";
-
-    private final RequestHandlerFactory requestHandlerFactory;
-
+    private final WebClient.Builder webClientBuilder;
+    private final ObjectMapper objectMapper;
+    private final AuthService authService;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String requestURI = exchange.getRequest().getPath().toString(); // 요청 URI
+        if (exchange.getRequest().getPath().toString().equals("/member/login")) {
+            return exchange.getRequest().getBody().next().flatMap(dataBuffer -> {
+                // 요청 본문을 읽어 LoginRequest로 변환
+                byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                dataBuffer.read(bytes);
+                String body = new String(bytes);
 
-        if (requestURI.startsWith(TOKEN_PATH)) {
-            return chain.filter(exchange);
+                // WebClient 인스턴스 생성
+                WebClient webClient = webClientBuilder.build();
+
+                // 로그인 요청을 멤버 서비스로 전달
+                return webClient.post()
+                        .uri("http://member/login") // Eureka를 통해 member 서비스로 요청을 보냅니다
+                        .contentType(MediaType.APPLICATION_JSON) // 콘텐츠 타입 설정
+                        .bodyValue(body)
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .flatMap(responseBody -> {
+                            ServerHttpResponse response = exchange.getResponse();
+                            response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+                            try {
+                                // 멤버 서비스의 응답을 TokenMemberInfo로 변환
+                                TokenMemberInfo tokenMemberInfo = objectMapper.readValue(responseBody, TokenMemberInfo.class);
+
+                                // JWT 토큰 생성
+                                TokenInfo tokenInfo = authService.issueTokens(tokenMemberInfo);
+
+                                // 쿠키 설정
+                                ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", tokenInfo.getAccessToken())
+                                        .httpOnly(true)
+                                        .secure(true)
+                                        .path("/")
+                                        .maxAge(30 * 60)  // 30 minutes
+                                        .build();
+                                response.addCookie(accessTokenCookie);
+
+                                // 응답 바디에 TokenInfo 넣기
+                                byte[] responseBytes = objectMapper.writeValueAsBytes(tokenInfo);
+                                return response.writeWith(Mono.just(response.bufferFactory().wrap(responseBytes)));
+                            } catch (Exception e) {
+                                response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+                                return response.setComplete();
+                            }
+                        });
+            });
         }
-
-        String serviceName = getServiceName(requestURI);
-        RequestHandler handler = requestHandlerFactory.getRequestHandler(serviceName);
-
-        RequestHandlerDto requestHandlerDto = RequestHandlerDto.builder()
-                .exchange(exchange)
-                .filterChain(chain)
-                .requestURI(requestURI)
-                .serviceURI(getServiceUri(serviceName, requestURI))
-                .build();
-
-        return handler.handleRequest(requestHandlerDto);
+        return chain.filter(exchange);
     }
-
-
-    private String getServiceName(String requestURI) {
-        return switch (requestURI.split("/")[1]) {
-            case "member" -> MEMBER_SERVICE;
-            case "orders", "cart", "product" -> OTHER_SERVICE;
-            default -> throw new ApiGatewayException(ErrorCode.INVALID_SERVICE_URI);
-        };
-    }
-
-    private String getServiceUri(String serviceName, String requestURI) {
-        return "http://" + serviceName + requestURI;
-    }
-
-
 }

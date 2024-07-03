@@ -1,11 +1,13 @@
 package com.GujjuSajang.member.entity;
 
+import com.GujjuSajang.core.entity.BaseTimeEntity;
 import com.GujjuSajang.member.dto.SellerDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Builder
-public class Seller {
+public class Seller extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,11 +32,6 @@ public class Seller {
     private String contactNumber;
     @Column(nullable = false)
     private String registrationNumber;
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createAt;
-    @LastModifiedDate
-    @Column
-    private LocalDateTime updateAt;
 
 
     public static Seller from(SellerDto sellerDto) {

@@ -1,12 +1,15 @@
-package com.GujjuSajang.orders.entity;
+package com.GujjuSajang.core.entity;
 
-import com.GujjuSajang.orders.type.OrdersStatus;
+import com.GujjuSajang.core.dto.CartProductsDto;
+import com.GujjuSajang.core.type.OrdersStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class OrdersProduct {
 
     @Id
@@ -25,27 +29,29 @@ public class OrdersProduct {
     @Column(nullable = false)
     private Long productId;
     @Column(nullable = false)
+    private String name;
+    @Column(nullable = false)
     private int count;
     @Column(nullable = false)
     private int price;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private OrdersStatus status;
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createAt;
+    @CreatedDate
+    private LocalDateTime createdAt;
     @LastModifiedDate
-    @Column
     private LocalDateTime updateAt;
 
-//    public static OrdersProduct from(Long orderId, CartProductsDto cartProductsDto) {
-//        return OrdersProduct.builder()
-//                .ordersId(orderId)
-//                .productId(cartProductsDto.getProductID())
-//                .count(cartProductsDto.getCount())
-//                .price(cartProductsDto.getPrice() * cartProductsDto.getCount())
-//                .status(OrdersStatus.COMPLETE)
-//                .build();
-//    }
+    public static OrdersProduct of(Long orderId, CartProductsDto cartProductsDto) {
+        return OrdersProduct.builder()
+                .ordersId(orderId)
+                .productId(cartProductsDto.getProductId())
+                .name(cartProductsDto.getName())
+                .count(cartProductsDto.getCount())
+                .price(cartProductsDto.getPrice() * cartProductsDto.getCount())
+                .status(OrdersStatus.PAYMENT_PENDING)
+                .build();
+    }
 
     public boolean changeDeliveryStatus() {
         LocalDateTime now = LocalDateTime.now();

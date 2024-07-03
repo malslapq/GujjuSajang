@@ -1,3 +1,3 @@
 spring:
   profiles:
-    include: member
+    include: member, db, redis, eureka-client

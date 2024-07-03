@@ -1,4 +1,4 @@
-package com.GujjuSajang.cart.dto;
+package com.GujjuSajang.core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,5 +14,7 @@ import java.util.List;
 @Setter
 public class CartDto {
 
+    private Long ordersId;
     private List<CartProductsDto> cartProductsDtos = new ArrayList<>();
+
 }

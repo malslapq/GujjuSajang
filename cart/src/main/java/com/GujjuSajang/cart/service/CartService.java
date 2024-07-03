@@ -1,49 +1,46 @@
 package com.GujjuSajang.cart.service;
 
-import com.GujjuSajang.cart.dto.CartDto;
-import com.GujjuSajang.cart.dto.CartProductsDto;
 import com.GujjuSajang.cart.dto.UpdateCartProductDto;
 import com.GujjuSajang.cart.repository.CartRedisRepository;
+import com.GujjuSajang.core.dto.CartDto;
+import com.GujjuSajang.core.dto.CartProductsDto;
 import com.GujjuSajang.core.dto.CreateMemberEventDto;
 import com.GujjuSajang.core.exception.CartException;
 import com.GujjuSajang.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class CartService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CartService.class);
     private final CartRedisRepository cartRedisRepository;
 
+    @Transactional
     @KafkaListener(topics = {"create-member"}, groupId = "createCart")
     public void createCart(CreateMemberEventDto createMemberEventDto) {
-        logger.info("Received CreateMemberEventDto: {}", createMemberEventDto);
         cartRedisRepository.save(createMemberEventDto.getId(), new CartDto());
     }
 
-    public CartDto addCartProduct(Long memberId, Long tokenMemberId, CartProductsDto cartProductsDto) {
-        CartDto cartDto = getCart(memberId, tokenMemberId);
+    public CartDto addCartProduct(Long memberId, CartProductsDto cartProductsDto) {
+        CartDto cartDto = getCart(memberId);
         cartDto.getCartProductsDtos().add(cartProductsDto);
         cartRedisRepository.save(memberId, cartDto);
         return cartDto;
     }
 
-    public CartDto getCart(Long id, Long tokenId) {
-        validateMemberId(id, tokenId);
-        return cartRedisRepository.get(id).orElseThrow(() -> new CartException(ErrorCode.CART_NOT_FOUND));
+    public CartDto getCart(Long memberId) {
+        return cartRedisRepository.get(memberId).orElseThrow(() -> new CartException(ErrorCode.CART_NOT_FOUND));
     }
 
-    public CartDto updateCart(Long memberId, Long productId, Long tokenMemberId, UpdateCartProductDto updateCartProductDto) {
+    public CartDto updateCart(Long memberId, Long productId, UpdateCartProductDto updateCartProductDto) {
 
-        CartDto getCart = getCart(memberId, tokenMemberId);
+        CartDto getCart = getCart(memberId);
 
         getCart.getCartProductsDtos().stream()
-                .filter(cartProductsDto -> cartProductsDto.getProductID().equals(productId))
+                .filter(cartProductsDto -> cartProductsDto.getProductId().equals(productId))
                 .findFirst()
                 .ifPresent(cartProductsDto -> cartProductsDto.setCount(updateCartProductDto.getCount()));
 
@@ -51,22 +48,15 @@ public class CartService {
         return getCart;
     }
 
-    public CartDto deleteCartProduct(Long memberId, Long productId, Long tokenId) {
-        CartDto cart = getCart(memberId, tokenId);
-        cart.getCartProductsDtos().removeIf(cartProductsDto -> cartProductsDto.getProductID().equals(productId));
+    public CartDto deleteCartProduct(Long memberId, Long productId) {
+        CartDto cart = getCart(memberId);
+        cart.getCartProductsDtos().removeIf(cartProductsDto -> cartProductsDto.getProductId().equals(productId));
         cartRedisRepository.save(memberId, cart);
         return cart;
     }
 
-    public void deleteCart(Long memberId, Long tokenId) {
-        validateMemberId(memberId, tokenId);
-        cartRedisRepository.delete(memberId);
-    }
-
-    private static void validateMemberId(Long memberId, Long tokenId) {
-        if (!memberId.equals(tokenId)) {
-            throw new CartException(ErrorCode.MISS_MATCH_MEMBER);
-        }
+    public void deleteCart(Long memberId) {
+        cartRedisRepository.save(memberId, new CartDto());
     }
 
 }

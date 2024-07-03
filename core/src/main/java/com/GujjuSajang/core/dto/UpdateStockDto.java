@@ -1,4 +1,4 @@
-package com.GujjuSajang.member.dto;
+package com.GujjuSajang.core.dto;
 
 import lombok.*;
 
@@ -7,10 +7,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductStockUpdateDto {
+public class UpdateStockDto {
 
     private Long productId;
-    private String name;
     private int count;
 
 }

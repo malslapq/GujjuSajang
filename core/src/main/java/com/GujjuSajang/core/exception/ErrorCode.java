@@ -8,16 +8,21 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
+    // 헤더 json 파싱 관련
+    FAIL_JSON_PARSE(HttpStatus.BAD_REQUEST, "JSON 파싱 실패"),
+
     // 재고 관련
     NOT_FOUND_STOCK(HttpStatus.NOT_FOUND, "해당 제품의 재고 정보를 찾을 수 없습니다."),
 
     // 주문 관련
     NOT_ENOUGH_STOCK(HttpStatus.BAD_REQUEST, "상품의 재고가 부족합니다."),
     NOT_FOUND_ORDER_PRODUCT(HttpStatus.NOT_FOUND, "결제 할 제품이 존재하지 않습니다."),
+    NOT_FOUND_ORDERS(HttpStatus.NOT_FOUND, "주문내역이 존재하지 않습니다.."),
     NOT_FOUND_ORDERED_PRODUCT(HttpStatus.NOT_FOUND,"주문한 제품을 찾을 수 없습니다."),
     ORDER_CANCELLATION_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "주문을 취소할 수 있는 기간이 아닙니다."),
     RETURN_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "반품할 수 있는 기간이 아닙니다."),
     ACTION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "요청이 가능한 상태가 아닙니다."),
+    ORDER_NOT_BELONG_TO_MEMBER(HttpStatus.BAD_REQUEST, "해당 회원의 주문이 아닙니다."),
 
 
     // 레디스 관련

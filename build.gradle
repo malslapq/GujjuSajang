@@ -45,7 +45,6 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:4.8.0'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         implementation 'org.mindrot:jbcrypt:0.4'
-        implementation 'org.springframework.kafka:spring-kafka'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
         implementation 'org.springframework.kafka:spring-kafka'
         implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

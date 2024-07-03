@@ -1,12 +1,12 @@
 package com.GujjuSajang.product.entity;
 
+import com.GujjuSajang.core.entity.BaseTimeEntity;
 import com.GujjuSajang.product.dto.ProductDetailDto;
 import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @AllArgsConstructor
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "product", indexes = {
         @Index(name = "idx_product_name", columnList = "name")
 })
-public class Product {
+public class Product extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,12 +29,7 @@ public class Product {
     private int price;
     @Column(nullable = false)
     private String description;
-    @CreatedDate
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createAt;
-    @LastModifiedDate
-    @Column
-    private LocalDateTime updateAt;
+
 
     public static Product from(ProductDetailDto productDetailDto) {
         return Product.builder()
