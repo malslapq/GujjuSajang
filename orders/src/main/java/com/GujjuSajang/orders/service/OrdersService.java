@@ -66,7 +66,7 @@ public class OrdersService {
 
         Orders orders = ordersRepository.findById(orderId).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
 
-        validateOrdersMemberId(memberId, orders.getId());
+        validateOrdersMemberId(memberId, orders.getMemberId());
 
         List<OrdersProduct> ordersProducts = ordersProductRepository.findByOrdersId(orderId);
 
@@ -83,9 +83,9 @@ public class OrdersService {
     @Transactional
     public OrdersProductDto cancelOrderProduct(Long memberId, Long orderProductId) {
 
-        Orders orders = ordersRepository.findById(orderProductId).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDER_PRODUCT));
-        validateOrdersMemberId(memberId, orders.getId());
         OrdersProduct ordersProduct = getOrderProduct(orderProductId);
+        Orders orders = ordersRepository.findById(ordersProduct.getOrdersId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDER_PRODUCT));
+        validateOrdersMemberId(memberId, orders.getMemberId());
         validateOrderProductStatus(ordersProduct.getStatus(), OrdersStatus.COMPLETE);
         ordersProduct.changeStatus(OrdersStatus.CANCEL);
         validateOrderPeriods(ordersProduct.getCreatedAt().plusDays(1));
@@ -104,7 +104,7 @@ public class OrdersService {
     public OrdersProductDto returnOrderProduct(Long memberId, Long orderProductId) {
         OrdersProduct ordersProduct = getOrderProduct(orderProductId);
         Orders orders = ordersRepository.findById(ordersProduct.getOrdersId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
-        validateOrdersMemberId(memberId, orders.getId());
+        validateOrdersMemberId(memberId, orders.getMemberId());
         validateOrderProductStatus(ordersProduct.getStatus(), OrdersStatus.COMPLETED_DELIVERY);
         validateOrderPeriods(ordersProduct.getUpdateAt().plusDays(1));
         ordersProduct.changeStatus(OrdersStatus.RETURN_REQUEST);

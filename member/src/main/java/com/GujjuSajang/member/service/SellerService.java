@@ -40,8 +40,7 @@ public class SellerService {
         validateProductId(productId, productStockUpdateDto.getProductId());
         validateMemberRole(tokenMemberInfo.getRole());
 
-        eventProducerService.sendEventWithKey("stock-update",
-                "stock" + productId,
+        eventProducerService.sendEvent("stock-update",
                 UpdateStockDto.builder()
                         .productId(productId)
                         .count(productStockUpdateDto.getCount())

@@ -53,7 +53,7 @@ public class OrdersProduct {
                 .build();
     }
 
-    public boolean changeDeliveryStatus() {
+    public Long updateDeliveryStatus() {
         LocalDateTime now = LocalDateTime.now();
         OrdersStatus prevStatus = this.status;
         switch (this.status) {
@@ -67,7 +67,7 @@ public class OrdersProduct {
                 this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? OrdersStatus.RETURN_COMPLETED : OrdersStatus.RETURN_REQUEST;
                 break;
         }
-        return prevStatus != this.status && this.status == OrdersStatus.RETURN_COMPLETED;
+        return prevStatus != this.status && this.status == OrdersStatus.RETURN_COMPLETED ? this.getProductId() : -1;
     }
 
     public void changeStatus(OrdersStatus status) {
