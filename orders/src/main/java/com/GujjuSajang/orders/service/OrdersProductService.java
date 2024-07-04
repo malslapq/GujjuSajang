@@ -67,7 +67,7 @@ public class OrdersProductService {
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void updateStatus() {
         List<OrdersStatus> statuses = Arrays.asList(OrdersStatus.COMPLETE, OrdersStatus.DELIVERY, OrdersStatus.RETURN_REQUEST);
         List<OrdersProduct> ordersProductList = ordersProductRepository.findByStatusIn(statuses);
@@ -79,7 +79,6 @@ public class OrdersProductService {
                 ordersProductCountMap.put(ids, ordersProduct.getCount());
             }
         }
-
 
         if (!ordersProductCountMap.isEmpty()) {
             List<Long> productIds = ordersProductCountMap.keySet().stream().toList();
