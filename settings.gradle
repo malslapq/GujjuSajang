@@ -3,7 +3,5 @@ rootProject.name = 'GujjuSajang'
 include 'core'
 include 'cart'
 include 'product'
-include 'redis'
 include 'member'
 include 'orders'
-

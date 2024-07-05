@@ -1,11 +1,14 @@
 package com.GujjuSajang.orders.controller;
 
 import com.GujjuSajang.core.dto.CartDto;
-import com.GujjuSajang.core.dto.OrdersProductDto;
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.orders.dto.OrdersDto;
 import com.GujjuSajang.orders.dto.OrdersPageDto;
+import com.GujjuSajang.orders.dto.OrdersProductDto;
+import com.GujjuSajang.orders.event.OrdersEventProducer;
+import com.GujjuSajang.orders.event.OrdersProductEventProducer;
+import com.GujjuSajang.orders.service.OrdersProductService;
 import com.GujjuSajang.orders.service.OrdersService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +24,15 @@ import java.util.List;
 public class OrdersController {
 
     private final OrdersService ordersService;
+    private final OrdersProductService ordersProductService;
+    private final OrdersEventProducer ordersEventProducer;
+    private final OrdersProductEventProducer ordersProductEventProducer;
 
     // 주문 (결제)
     @PostMapping
     public ResponseEntity<OrdersDto> createOrder(HttpServletRequest request, @RequestBody CartDto cartDto) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok(ordersService.createOrder(tokenMemberInfo.getId(), cartDto));
+        return ResponseEntity.ok(ordersEventProducer.createOrder(tokenMemberInfo.getId(), cartDto));
     }
 
     // 주문 조회
@@ -41,21 +47,21 @@ public class OrdersController {
     @GetMapping("/{order-id}/products")
     public ResponseEntity<List<OrdersProductDto>> getOrderProducts(@PathVariable("order-id") Long orderId, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok(ordersService.getOrderProducts(tokenMemberInfo.getId(), orderId));
+        return ResponseEntity.ok(ordersProductService.getOrderProducts(tokenMemberInfo.getId(), orderId));
     }
 
     // 주문 취소
     @PatchMapping("/product/{order-product-id}/cancel")
     public ResponseEntity<OrdersProductDto> cancelOrderProduct(@PathVariable("order-product-id") Long orderProductId, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok(ordersService.cancelOrderProduct(tokenMemberInfo.getId(), orderProductId));
+        return ResponseEntity.ok(ordersProductEventProducer.cancelOrderProduct(tokenMemberInfo.getId(), orderProductId));
     }
 
     // 주문 반품
     @PatchMapping("/product/{order-product-id}/return")
     public ResponseEntity<OrdersProductDto> returnOrderProduct(@PathVariable("order-product-id") Long orderProductId, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok(ordersService.returnOrderProduct(tokenMemberInfo.getId(), orderProductId));
+        return ResponseEntity.ok(ordersProductService.returnOrderProduct(tokenMemberInfo.getId(), orderProductId));
     }
 
 

@@ -10,6 +10,7 @@ public enum OrdersStatus {
     PAYMENT_PENDING("결제 대기"),
     INSUFFICIENT_STOCK("주문 취소(재고 부족)"),
     COMPLETE("주문 완료"),
+    PROCESSING_ERROR("주문 실패(서버 에러)"),
     DELIVERY("배송 중"),
     COMPLETED_DELIVERY("배송 완료"),
     CANCEL("주문 취소"),

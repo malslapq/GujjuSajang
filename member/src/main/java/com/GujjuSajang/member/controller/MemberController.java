@@ -6,8 +6,8 @@ import com.GujjuSajang.member.dto.MemberLoginDto;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
 import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
+import com.GujjuSajang.member.event.MemberEventProducer;
 import com.GujjuSajang.member.service.MemberService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private final MemberEventProducer memberEventProducer;
 
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<MemberSignUpDto> signUp(@RequestBody @Valid MemberSignUpDto memberSignUpDto) {
-        return ResponseEntity.ok().body(memberService.signUp(memberSignUpDto));
+        return ResponseEntity.ok().body(memberEventProducer.signUp(memberSignUpDto));
     }
 
     // 로그인

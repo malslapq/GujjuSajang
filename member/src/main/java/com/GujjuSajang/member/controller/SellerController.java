@@ -4,6 +4,7 @@ import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.member.dto.ProductStockUpdateDto;
 import com.GujjuSajang.member.dto.SellerDto;
+import com.GujjuSajang.member.event.SellerEventProducer;
 import com.GujjuSajang.member.service.SellerService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class SellerController {
 
     private final SellerService sellerService;
+    private final SellerEventProducer sellerEventProducer;
 
     // 판매자 등록
     @PostMapping
@@ -30,7 +32,7 @@ public class SellerController {
                                                              @RequestBody ProductStockUpdateDto productStockUpdateDto,
                                                              HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok(sellerService.updateProductStock(tokenMemberInfo, productId, productStockUpdateDto));
+        return ResponseEntity.ok(sellerEventProducer.updateProductStock(tokenMemberInfo, productId, productStockUpdateDto));
     }
 
 

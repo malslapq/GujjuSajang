@@ -1,16 +1,11 @@
 package com.GujjuSajang.orders.entity;
 
 import com.GujjuSajang.core.dto.CartDto;
-import com.GujjuSajang.core.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor

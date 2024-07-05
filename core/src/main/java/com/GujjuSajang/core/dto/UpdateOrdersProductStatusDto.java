@@ -12,6 +12,7 @@ import java.util.Map;
 @Builder
 public class UpdateOrdersProductStatusDto {
 
+    private List<Long> ordersProductIds;
     private List<Long> productIds;
     private Map<Long,Integer> ordersProductCountsMap;
 

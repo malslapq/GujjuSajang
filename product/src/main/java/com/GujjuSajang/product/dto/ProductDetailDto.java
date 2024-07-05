@@ -1,7 +1,7 @@
 package com.GujjuSajang.product.dto;
 
 import com.GujjuSajang.product.entity.Product;
-import com.GujjuSajang.product.stock.Entity.Stock;
+import com.GujjuSajang.product.entity.Stock;
 import lombok.*;
 
 @AllArgsConstructor

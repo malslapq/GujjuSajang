@@ -1,6 +1,5 @@
 package com.GujjuSajang.product.entity;
 
-import com.GujjuSajang.core.entity.BaseTimeEntity;
 import com.GujjuSajang.product.dto.ProductDetailDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

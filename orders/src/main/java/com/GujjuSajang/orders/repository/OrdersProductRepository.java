@@ -1,6 +1,6 @@
 package com.GujjuSajang.orders.repository;
 
-import com.GujjuSajang.core.entity.OrdersProduct;
+import com.GujjuSajang.orders.entity.OrdersProduct;
 import com.GujjuSajang.core.type.OrdersStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

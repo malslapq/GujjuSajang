@@ -1,95 +1,81 @@
 package com.GujjuSajang.orders.service;
 
-import com.GujjuSajang.core.dto.CreateOrderEventDto;
-import com.GujjuSajang.core.dto.OrdersProductDto;
-import com.GujjuSajang.core.dto.UpdateOrdersProductStatusDto;
-import com.GujjuSajang.core.entity.OrdersProduct;
-import com.GujjuSajang.core.service.EventProducerService;
+
+import com.GujjuSajang.core.exception.ErrorCode;
+import com.GujjuSajang.core.exception.OrdersException;
 import com.GujjuSajang.core.type.OrdersStatus;
+import com.GujjuSajang.orders.dto.OrdersProductDto;
+import com.GujjuSajang.orders.entity.Orders;
+import com.GujjuSajang.orders.entity.OrdersProduct;
 import com.GujjuSajang.orders.repository.OrdersProductRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.GujjuSajang.orders.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.Message;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrdersProductService {
 
+    private final OrdersRepository ordersRepository;
     private final OrdersProductRepository ordersProductRepository;
-    private final EventProducerService eventProducerService;
-    private final ObjectMapper objectMapper;
 
+
+    // 주문 내역 상세 조회
     @Transactional
-    @KafkaListener(topics = {"create-orders"}, groupId = "createOrdersProduct")
-    public void createOrdersProduct(CreateOrderEventDto createOrderEventDto) {
-        List<OrdersProduct> ordersProducts = createOrderEventDto.getCartProductsDtos().stream()
-                .map(cartProductsDto -> OrdersProduct.of(createOrderEventDto.getOrderId(), cartProductsDto)).toList();
-        List<OrdersProductDto> ordersProductDtoList = ordersProductRepository.saveAll(ordersProducts)
-                .stream()
+    public List<OrdersProductDto> getOrderProducts(Long memberId, Long orderId) {
+
+        Orders orders = ordersRepository.findById(orderId).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
+
+        validateOrdersMemberId(memberId, orders.getMemberId());
+
+        List<OrdersProduct> ordersProducts = ordersProductRepository.findByOrdersId(orderId);
+
+        if (ordersProducts.isEmpty()) {
+            throw new OrdersException(ErrorCode.NOT_FOUND_ORDER_PRODUCT);
+        }
+
+        return ordersProducts.stream()
                 .map(OrdersProductDto::from)
                 .toList();
-        eventProducerService.sendEventWithKey("create-orders-product", "orders", ordersProductDtoList);
     }
 
+    // 주문 제품 반품 신청
     @Transactional
-    @KafkaListener(topics = {"checkStock"}, groupId = "updateStatus")
-    public void updateStatus(Message<?> message) {
-        List<OrdersProductDto> ordersProductDtoList = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
-        });
-        List<Long> orderProductIds = ordersProductDtoList.stream()
-                .map(OrdersProductDto::getId)
-                .collect(Collectors.toList());
-
-        List<OrdersProduct> ordersProducts = ordersProductRepository.findAllById(orderProductIds);
-
-        Map<Long, OrdersProductDto> ordersProductDtoListMap = ordersProductDtoList.stream()
-                .collect(Collectors.toMap(OrdersProductDto::getId, dto -> dto));
-
-        ordersProducts.forEach(ordersProduct -> {
-            OrdersProductDto ordersProductDto = ordersProductDtoListMap.get(ordersProduct.getId());
-            if (ordersProductDto != null) {
-                ordersProduct.changeStatus(ordersProductDto.getStatus());
-            }
-        });
-
-        ordersProductRepository.saveAll(ordersProducts);
+    public OrdersProductDto returnOrderProduct(Long memberId, Long orderProductId) {
+        OrdersProduct ordersProduct = getOrderProduct(orderProductId);
+        Orders orders = ordersRepository.findById(ordersProduct.getOrdersId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
+        validateOrdersMemberId(memberId, orders.getMemberId());
+        validateOrderProductStatus(ordersProduct.getStatus());
+        validateOrderPeriods(ordersProduct.getUpdateAt().plusDays(1));
+        ordersProduct.changeStatus(OrdersStatus.RETURN_REQUEST);
+        return OrdersProductDto.from(ordersProduct);
     }
 
-    @Transactional
-    @Scheduled(cron = "0 0 * * * *")
-    public void updateStatus() {
-        List<OrdersStatus> statuses = Arrays.asList(OrdersStatus.COMPLETE, OrdersStatus.DELIVERY, OrdersStatus.RETURN_REQUEST);
-        List<OrdersProduct> ordersProductList = ordersProductRepository.findByStatusIn(statuses);
-        Map<Long, Integer> ordersProductCountMap = new HashMap<>();
 
-        for (OrdersProduct ordersProduct : ordersProductList) {
-            Long ids = ordersProduct.updateDeliveryStatus();
-            if (ids != -1) {
-                ordersProductCountMap.put(ids, ordersProduct.getCount());
-            }
+    private static void validateOrdersMemberId(Long memberId, Long ordersMemberId) {
+        if (!memberId.equals(ordersMemberId)) {
+            throw new OrdersException(ErrorCode.ORDER_NOT_BELONG_TO_MEMBER);
         }
-
-        if (!ordersProductCountMap.isEmpty()) {
-            List<Long> productIds = ordersProductCountMap.keySet().stream().toList();
-            eventProducerService.sendEvent("update-ordersProduct-status",
-                    UpdateOrdersProductStatusDto.builder()
-                            .productIds(productIds)
-                            .ordersProductCountsMap(ordersProductCountMap)
-                            .build());
-        }
-
     }
 
+    private static void validateOrderPeriods(LocalDateTime orderCreateAtPlusDays) {
+        if (LocalDateTime.now().isAfter(orderCreateAtPlusDays)) {
+            throw new OrdersException(ErrorCode.ORDER_CANCELLATION_PERIOD_EXPIRED);
+        }
+    }
+
+    private static void validateOrderProductStatus(OrdersStatus orderProductStatus) {
+        if (orderProductStatus != OrdersStatus.COMPLETED_DELIVERY) {
+            throw new OrdersException(ErrorCode.ACTION_NOT_ALLOWED);
+        }
+    }
+
+    private OrdersProduct getOrderProduct(Long orderProductId) {
+        return ordersProductRepository.findById(orderProductId).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERED_PRODUCT));
+    }
 
 }
