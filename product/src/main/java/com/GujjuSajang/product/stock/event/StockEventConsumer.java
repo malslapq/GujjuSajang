@@ -60,10 +60,12 @@ public class StockEventConsumer {
 
             for (CartProductsDto cartProductsDto : createOrderEventDto.getCartProductsDtos()) {
                 int orderProductCount = cartProductsDto.getCount();
+                log.error("order count : {}", orderProductCount);
                 int stockCount = stockCountMap.get(cartProductsDto.getProductId());
 
-                if (orderProductCount < stockCount) {
+                if (orderProductCount <= stockCount) {
                     stockCountMap.put(cartProductsDto.getProductId(), -orderProductCount);
+                    log.error("update stock count : {}", stockCount);
                 } else {
                     throw new OrdersException(ErrorCode.NOT_ENOUGH_STOCK);
                 }
