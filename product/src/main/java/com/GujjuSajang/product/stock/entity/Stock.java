@@ -1,5 +1,6 @@
-package com.GujjuSajang.product.entity;
+package com.GujjuSajang.product.stock.entity;
 
+import com.GujjuSajang.product.entity.BaseTimeEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

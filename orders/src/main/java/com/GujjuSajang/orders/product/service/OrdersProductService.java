@@ -1,12 +1,12 @@
-package com.GujjuSajang.orders.service;
+package com.GujjuSajang.orders.product.service;
 
 
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.OrdersException;
-import com.GujjuSajang.core.type.OrdersStatus;
-import com.GujjuSajang.orders.dto.OrdersProductDto;
+import com.GujjuSajang.core.type.DeliveryStatus;
+import com.GujjuSajang.orders.product.dto.OrdersProductDto;
 import com.GujjuSajang.orders.entity.Orders;
-import com.GujjuSajang.orders.entity.OrdersProduct;
+import com.GujjuSajang.orders.product.entity.OrdersProduct;
 import com.GujjuSajang.orders.repository.OrdersProductRepository;
 import com.GujjuSajang.orders.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class OrdersProductService {
         validateOrdersMemberId(memberId, orders.getMemberId());
         validateOrderProductStatus(ordersProduct.getStatus());
         validateOrderPeriods(ordersProduct.getUpdateAt().plusDays(1));
-        ordersProduct.changeStatus(OrdersStatus.RETURN_REQUEST);
+        ordersProduct.changeStatus(DeliveryStatus.RETURN_REQUEST);
         return OrdersProductDto.from(ordersProduct);
     }
 
@@ -68,8 +68,8 @@ public class OrdersProductService {
         }
     }
 
-    private static void validateOrderProductStatus(OrdersStatus orderProductStatus) {
-        if (orderProductStatus != OrdersStatus.COMPLETED_DELIVERY) {
+    private static void validateOrderProductStatus(DeliveryStatus deliveryStatus) {
+        if (deliveryStatus != DeliveryStatus.COMPLETED_DELIVERY) {
             throw new OrdersException(ErrorCode.ACTION_NOT_ALLOWED);
         }
     }

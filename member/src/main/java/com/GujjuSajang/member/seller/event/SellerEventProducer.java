@@ -1,11 +1,12 @@
-package com.GujjuSajang.member.event;
+package com.GujjuSajang.member.seller.event;
 
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.dto.UpdateStockDto;
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.MemberException;
 import com.GujjuSajang.core.type.MemberRole;
-import com.GujjuSajang.member.dto.ProductStockUpdateDto;
+import com.GujjuSajang.member.seller.dto.ProductStockUpdateDto;
+import com.GujjuSajang.member.util.EventProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

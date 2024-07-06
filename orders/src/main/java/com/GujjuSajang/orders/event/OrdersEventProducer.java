@@ -22,9 +22,8 @@ public class OrdersEventProducer {
 
         Orders orders = ordersRepository.save(Orders.of(memberId, cartDto));
 
-        eventProducer.sendEventWithKey(
+        eventProducer.sendEvent(
                 "create-orders",
-                "orders",
                 CreateOrderEventDto.builder()
                         .cartProductsDtos(cartDto.getCartProductsDtos())
                         .orderId(orders.getId())

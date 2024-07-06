@@ -1,6 +1,7 @@
 package com.GujjuSajang.member.event;
 
 import com.GujjuSajang.core.dto.CreateMemberEventDto;
+import com.GujjuSajang.member.util.EventProducer;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.entity.Member;
 import com.GujjuSajang.member.repository.MemberRepository;

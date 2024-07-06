@@ -1,8 +1,8 @@
-package com.GujjuSajang.orders.dto;
+package com.GujjuSajang.orders.product.dto;
 
 
-import com.GujjuSajang.core.type.OrdersStatus;
-import com.GujjuSajang.orders.entity.OrdersProduct;
+import com.GujjuSajang.core.type.DeliveryStatus;
+import com.GujjuSajang.orders.product.entity.OrdersProduct;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ public class OrdersProductDto {
     private String name;
     private int count;
     private int Price;
-    private OrdersStatus status;
+    private DeliveryStatus status;
     private LocalDateTime createAt;
 
     public static OrdersProductDto from(OrdersProduct ordersProduct) {

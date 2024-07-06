@@ -1,6 +1,6 @@
-package com.GujjuSajang.member.dto;
+package com.GujjuSajang.member.seller.dto;
 
-import com.GujjuSajang.member.entity.Seller;
+import com.GujjuSajang.member.seller.entity.Seller;
 import lombok.*;
 
 @AllArgsConstructor

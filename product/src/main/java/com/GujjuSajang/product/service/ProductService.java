@@ -10,7 +10,7 @@ import com.GujjuSajang.product.dto.ProductDto;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.entity.Product;
 import com.GujjuSajang.product.repository.ProductRepository;
-import com.GujjuSajang.product.entity.Stock;
+import com.GujjuSajang.product.stock.entity.Stock;
 import com.GujjuSajang.product.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

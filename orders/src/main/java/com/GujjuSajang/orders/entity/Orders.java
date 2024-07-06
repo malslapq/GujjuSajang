@@ -1,6 +1,7 @@
 package com.GujjuSajang.orders.entity;
 
 import com.GujjuSajang.core.dto.CartDto;
+import com.GujjuSajang.core.type.OrdersStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,12 +22,23 @@ public class Orders extends BaseTimeEntity {
     private Long memberId;
     @Column(nullable = false)
     private int totalPrice;
+    @Enumerated(EnumType.STRING)
+    private OrdersStatus status;
 
     public static Orders of(Long memberId, CartDto cartDto) {
         return Orders.builder()
                 .memberId(memberId)
                 .totalPrice(cartDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum())
+                .status(OrdersStatus.PAYMENT_PENDING)
                 .build();
+    }
+
+    public void successOrders() {
+        this.status = OrdersStatus.COMPLETE;
+    }
+
+    public void failOrders() {
+        this.status = OrdersStatus.PROCESSING_ERROR;
     }
 
 

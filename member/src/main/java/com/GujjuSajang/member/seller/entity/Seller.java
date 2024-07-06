@@ -1,6 +1,7 @@
-package com.GujjuSajang.member.entity;
+package com.GujjuSajang.member.seller.entity;
 
-import com.GujjuSajang.member.dto.SellerDto;
+import com.GujjuSajang.member.entity.BaseTimeEntity;
+import com.GujjuSajang.member.seller.dto.SellerDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

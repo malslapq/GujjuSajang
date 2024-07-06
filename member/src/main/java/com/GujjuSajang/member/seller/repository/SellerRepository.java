@@ -1,6 +1,6 @@
-package com.GujjuSajang.member.repository;
+package com.GujjuSajang.member.seller.repository;
 
-import com.GujjuSajang.member.entity.Seller;
+import com.GujjuSajang.member.seller.entity.Seller;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

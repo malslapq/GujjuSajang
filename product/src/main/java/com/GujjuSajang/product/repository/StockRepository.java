@@ -1,6 +1,6 @@
 package com.GujjuSajang.product.repository;
 
-import com.GujjuSajang.product.entity.Stock;
+import com.GujjuSajang.product.stock.entity.Stock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

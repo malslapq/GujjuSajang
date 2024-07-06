@@ -1,7 +1,7 @@
-package com.GujjuSajang.orders.entity;
+package com.GujjuSajang.orders.product.entity;
 
 import com.GujjuSajang.core.dto.CartProductsDto;
-import com.GujjuSajang.core.type.OrdersStatus;
+import com.GujjuSajang.core.type.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +36,7 @@ public class OrdersProduct {
     private int price;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private OrdersStatus status;
+    private DeliveryStatus status;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
@@ -49,37 +49,37 @@ public class OrdersProduct {
                 .name(cartProductsDto.getName())
                 .count(cartProductsDto.getCount())
                 .price(cartProductsDto.getPrice() * cartProductsDto.getCount())
-                .status(OrdersStatus.PAYMENT_PENDING)
+                .status(DeliveryStatus.COMPLETE)
                 .build();
     }
 
     public Long updateDeliveryStatus() {
         LocalDateTime now = LocalDateTime.now();
-        OrdersStatus prevStatus = this.status;
+        DeliveryStatus prevStatus = this.status;
         switch (this.status) {
             case COMPLETE:
-                this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? OrdersStatus.DELIVERY : OrdersStatus.COMPLETE;
+                this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? DeliveryStatus.DELIVERY : DeliveryStatus.COMPLETE;
                 break;
             case DELIVERY:
-                this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? OrdersStatus.COMPLETED_DELIVERY : OrdersStatus.DELIVERY;
+                this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? DeliveryStatus.COMPLETED_DELIVERY : DeliveryStatus.DELIVERY;
                 break;
             case RETURN_REQUEST:
-                this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? OrdersStatus.RETURN_COMPLETED : OrdersStatus.RETURN_REQUEST;
+                this.status = now.isAfter(this.getUpdateAt().plusDays(1)) ? DeliveryStatus.RETURN_COMPLETED : DeliveryStatus.RETURN_REQUEST;
                 break;
         }
-        return prevStatus != this.status && this.status == OrdersStatus.RETURN_COMPLETED ? this.getProductId() : -1;
+        return prevStatus != this.status && this.status == DeliveryStatus.RETURN_COMPLETED ? this.getProductId() : -1;
     }
 
-    public void changeStatus(OrdersStatus status) {
+    public void changeStatus(DeliveryStatus status) {
         this.status = status;
     }
 
     public void rollBackReturnCompletedStatus() {
-        this.status = OrdersStatus.RETURN_REQUEST;
+        this.status = DeliveryStatus.RETURN_REQUEST;
     }
 
     public void processingErrorStatus() {
-        this.status = OrdersStatus.PROCESSING_ERROR;
+        this.status = DeliveryStatus.PROCESSING_ERROR;
     }
 
 }

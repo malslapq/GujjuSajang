@@ -1,6 +1,7 @@
 package com.GujjuSajang.member.event;
 
 import com.GujjuSajang.core.dto.CreateMemberEventDto;
+import com.GujjuSajang.member.util.EventProducer;
 import com.GujjuSajang.member.repository.MailVerifiedRedisRepository;
 import com.GujjuSajang.member.util.MailSender;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class MailEventConsumer {
     private final EventProducer eventProducer;
 
     @Transactional
-    @KafkaListener(topics = {"create-member"}, groupId = "sendMail")
+    @KafkaListener(topics = {"create-member"}, groupId = "mail-service")
     public void sendMail(CreateMemberEventDto createMemberEventDto) {
         try {
             mailSender.sendVerifiedMail(createMemberEventDto.getId(), createMemberEventDto.getMail(), createMemberEventDto.getCode());
@@ -27,7 +28,7 @@ public class MailEventConsumer {
     }
 
     @Transactional
-    @KafkaListener(topics = {"create-member"}, groupId = "saveCode")
+    @KafkaListener(topics = {"create-member"}, groupId = "member-service")
     public void saveVerifiedMail(CreateMemberEventDto createMemberEventDto) {
         try {
             mailVerifiedRedisRepository.save(createMemberEventDto.getId(), createMemberEventDto.getCode());

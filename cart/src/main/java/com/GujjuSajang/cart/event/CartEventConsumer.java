@@ -16,7 +16,7 @@ public class CartEventConsumer {
     private final EventProducer eventProducer;
 
     @Transactional
-    @KafkaListener(topics = {"create-member"}, groupId = "createCart")
+    @KafkaListener(topics = {"create-member"}, groupId = "cart-service")
     public void createCart(CreateMemberEventDto createMemberEventDto) {
         try {
             cartRedisRepository.save(createMemberEventDto.getId(), new CartDto());

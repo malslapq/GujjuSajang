@@ -1,4 +1,4 @@
-package com.GujjuSajang.product.dto;
+package com.GujjuSajang.product.stock.dto;
 
 import lombok.*;
 

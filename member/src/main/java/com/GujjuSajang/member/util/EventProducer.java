@@ -1,4 +1,4 @@
-package com.GujjuSajang.member.event;
+package com.GujjuSajang.member.util;
 
 import com.GujjuSajang.member.config.KafkaProducerConfig;
 import lombok.RequiredArgsConstructor;

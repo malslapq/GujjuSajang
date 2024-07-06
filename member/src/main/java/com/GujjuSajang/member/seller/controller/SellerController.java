@@ -1,10 +1,10 @@
-package com.GujjuSajang.member.controller;
+package com.GujjuSajang.member.seller.controller;
 
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.util.RequestHeaderUtil;
-import com.GujjuSajang.member.dto.ProductStockUpdateDto;
-import com.GujjuSajang.member.dto.SellerDto;
-import com.GujjuSajang.member.event.SellerEventProducer;
+import com.GujjuSajang.member.seller.dto.ProductStockUpdateDto;
+import com.GujjuSajang.member.seller.dto.SellerDto;
+import com.GujjuSajang.member.seller.event.SellerEventProducer;
 import com.GujjuSajang.member.service.SellerService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
