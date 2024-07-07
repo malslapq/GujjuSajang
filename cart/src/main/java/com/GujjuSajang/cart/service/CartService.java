@@ -4,8 +4,6 @@ import com.GujjuSajang.cart.dto.UpdateCartProductDto;
 import com.GujjuSajang.cart.repository.CartRedisRepository;
 import com.GujjuSajang.core.dto.CartDto;
 import com.GujjuSajang.core.dto.CartProductsDto;
-import com.GujjuSajang.core.exception.CartException;
-import com.GujjuSajang.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +21,7 @@ public class CartService {
     }
 
     public CartDto getCart(Long memberId) {
-        return cartRedisRepository.get(memberId).orElseThrow(() -> new CartException(ErrorCode.CART_NOT_FOUND));
+        return cartRedisRepository.get(memberId).orElse(new CartDto());
     }
 
     public CartDto updateCart(Long memberId, Long productId, UpdateCartProductDto updateCartProductDto) {
