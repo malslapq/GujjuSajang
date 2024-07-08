@@ -1,4 +1,4 @@
-package com.GujjuSajang.product.repository;
+package com.GujjuSajang.product.stock.repository;
 
 import com.GujjuSajang.product.stock.entity.Stock;
 import org.springframework.data.jpa.repository.JpaRepository;

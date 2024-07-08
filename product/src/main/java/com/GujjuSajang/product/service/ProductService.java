@@ -10,8 +10,10 @@ import com.GujjuSajang.product.dto.ProductDto;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.entity.Product;
 import com.GujjuSajang.product.repository.ProductRepository;
+import com.GujjuSajang.product.stock.dto.StockDto;
 import com.GujjuSajang.product.stock.entity.Stock;
-import com.GujjuSajang.product.repository.StockRepository;
+import com.GujjuSajang.product.stock.repository.StockRedisRepository;
+import com.GujjuSajang.product.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final StockRepository stockRepository;
+    private final StockRedisRepository stockRedisRepository;
 
     // 제품 등록
     @Transactional
@@ -70,7 +74,13 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDetailDto getProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_PRODUCT));
-        Stock stock = stockRepository.findByProductId(productId).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_STOCK));
+        Optional<StockDto> stockDto = stockRedisRepository.get(productId);
+
+        Stock stock = stockDto.isPresent()
+                ? Stock.from(stockDto.get())
+                : stockRepository.findByProductId(productId).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_STOCK));
+
+        // ProductDetailDto 생성 및 반환
         return ProductDetailDto.of(product, stock);
     }
 

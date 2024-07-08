@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 public class CreateOrderEventDto {
 
+    private Long memberId;
     private Long orderId;
     private List<CartProductsDto> cartProductsDtos = new ArrayList<>();
 }

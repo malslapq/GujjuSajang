@@ -17,8 +17,6 @@ public class AuthRedisRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String KEY_PREFIX = "refreshToken::";
-    private static final String MAIL_VERIFIED_PREFIX = "MAIL_VERIFIED::";
-
 
     public void save(long id, String refreshToken, int expiresMin) {
         try {

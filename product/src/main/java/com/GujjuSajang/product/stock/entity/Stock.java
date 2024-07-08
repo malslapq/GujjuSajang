@@ -1,6 +1,7 @@
 package com.GujjuSajang.product.stock.entity;
 
 import com.GujjuSajang.product.entity.BaseTimeEntity;
+import com.GujjuSajang.product.stock.dto.StockDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +26,14 @@ public class Stock extends BaseTimeEntity {
 
     public void updateCount(int count) {
         this.count += count;
+    }
+
+    public static Stock from(StockDto stockDto) {
+        return Stock.builder()
+                .id(stockDto.getId())
+                .productId(stockDto.getProductId())
+                .count(stockDto.getCount())
+                .build();
     }
 
 }

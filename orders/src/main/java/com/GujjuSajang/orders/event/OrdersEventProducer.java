@@ -2,9 +2,6 @@ package com.GujjuSajang.orders.event;
 
 import com.GujjuSajang.core.dto.CartDto;
 import com.GujjuSajang.core.dto.CreateOrderEventDto;
-import com.GujjuSajang.orders.dto.OrdersDto;
-import com.GujjuSajang.orders.entity.Orders;
-import com.GujjuSajang.orders.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,23 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OrdersEventProducer {
 
-    private final OrdersRepository ordersRepository;
     private final EventProducer eventProducer;
 
-    // 주문 생성
+    // 주문 요청 이벤트
     @Transactional
-    public OrdersDto createOrder(Long memberId, CartDto cartDto) {
-
-        Orders orders = ordersRepository.save(Orders.of(memberId, cartDto));
+    public void createOrder(Long memberId, CartDto cartDto) {
 
         eventProducer.sendEvent(
                 "create-orders",
                 CreateOrderEventDto.builder()
+                        .memberId(memberId)
                         .cartProductsDtos(cartDto.getCartProductsDtos())
-                        .orderId(orders.getId())
                         .build());
 
-        return OrdersDto.from(orders);
     }
 
 
