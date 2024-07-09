@@ -37,7 +37,11 @@ public class Orders extends BaseTimeEntity {
         this.status = OrdersStatus.COMPLETE;
     }
 
-    public void failOrders() {
+    public void failOrdersFromPayment() {
+        this.status = OrdersStatus.FAILED_PAYMENT;
+    }
+
+    public void failOrdersFromOrdersProducts() {
         this.status = OrdersStatus.PROCESSING_ERROR;
     }
 

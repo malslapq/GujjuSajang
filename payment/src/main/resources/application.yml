@@ -1,0 +1,3 @@
+spring:
+  profiles:
+    include: payment, db, eureka-client

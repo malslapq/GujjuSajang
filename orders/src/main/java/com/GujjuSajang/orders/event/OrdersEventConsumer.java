@@ -50,11 +50,44 @@ public class OrdersEventConsumer {
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
-            Orders orders = ordersRepository.findById(createOrderEventDto.getOrderId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
+            Orders orders = getOrders(createOrderEventDto);
             orders.successOrders();
         } catch (Exception e) {
             log.error("Failed to complete orders with ID: {}. Exception: ", Objects.requireNonNull(createOrderEventDto).getOrderId(), e);
         }
     }
+
+    @KafkaListener(topics = {"fail-payment"}, groupId = "orders-service")
+    public void failOrdersFromFailedPayment(Message<?> message) {
+        CreateOrderEventDto createOrderEventDto = null;
+        try {
+            createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
+            });
+            Orders orders = getOrders(createOrderEventDto);
+            orders.failOrdersFromPayment();
+            ordersRepository.save(orders);
+        } catch (Exception e) {
+            log.error("fail orders from fail payment message: {}. Exception:", createOrderEventDto, e);
+        }
+    }
+
+    @KafkaListener(topics = {"fail-create-orders-product"}, groupId = "orders-service")
+    public void failOrdersFromFailedOrdersProducts(Message<?> message) {
+        CreateOrderEventDto createOrderEventDto = null;
+        try {
+            createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
+            });
+            Orders orders = getOrders(createOrderEventDto);
+            orders.failOrdersFromOrdersProducts();
+            ordersRepository.save(orders);
+        } catch (Exception e) {
+            log.error("error change order status from fail orders products message: {}. Exception:", createOrderEventDto, e);
+        }
+    }
+
+    private Orders getOrders(CreateOrderEventDto createOrderEventDto) {
+        return ordersRepository.findById(createOrderEventDto.getOrderId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
+    }
+
 
 }

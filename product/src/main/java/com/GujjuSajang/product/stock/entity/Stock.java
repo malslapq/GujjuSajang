@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @AllArgsConstructor
@@ -23,9 +25,10 @@ public class Stock extends BaseTimeEntity {
     private Long id;
     private Long productId;
     private int count;
+    private LocalDateTime startTime;
 
     public void updateCount(int count) {
-        this.count = count;
+        this.count += count;
     }
 
     public static Stock from(StockDto stockDto) {

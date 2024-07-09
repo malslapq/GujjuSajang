@@ -1,9 +1,8 @@
 package com.GujjuSajang.orders.product.event;
 
 import com.GujjuSajang.core.dto.CreateOrderEventDto;
-import com.GujjuSajang.orders.product.dto.OrdersProductDto;
-import com.GujjuSajang.orders.product.entity.OrdersProduct;
 import com.GujjuSajang.orders.event.EventProducer;
+import com.GujjuSajang.orders.product.entity.OrdersProduct;
 import com.GujjuSajang.orders.repository.OrdersProductRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,9 +25,9 @@ public class OrdersProductEventConsumer {
     private final ObjectMapper objectMapper;
 
 
-    // 주문 생성 성공 이벤트 받아서 주문 제품 생성 (중간에 결제 했다고 가정)
+    // 주문 결제 성공 이벤트 받아서 주문 제품 생성
     @Transactional
-    @KafkaListener(topics = {"success-create-orders"}, groupId = "order-product-service")
+    @KafkaListener(topics = {"success-payment"}, groupId = "order-product-service")
     public void createOrdersProduct(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
@@ -37,7 +36,7 @@ public class OrdersProductEventConsumer {
             CreateOrderEventDto finalCreateOrderEventDto = createOrderEventDto;
             List<OrdersProduct> ordersProducts = createOrderEventDto.getCartProductsDtos().stream()
                     .map(cartProductsDto -> OrdersProduct.of(finalCreateOrderEventDto.getOrderId(), cartProductsDto)).toList();
-            List<OrdersProductDto> ordersProductDtoList = ordersProductRepository.saveAll(ordersProducts).stream().map(OrdersProductDto::from).toList();
+            ordersProductRepository.saveAll(ordersProducts);
             eventProducer.sendEvent("success-create-orders-product", createOrderEventDto);
         } catch (Exception e) {
             eventProducer.sendEvent("fail-create-orders-product", createOrderEventDto);

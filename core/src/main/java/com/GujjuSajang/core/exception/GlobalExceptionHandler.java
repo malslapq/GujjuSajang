@@ -7,6 +7,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ErrorResponse> handleMemberException(PaymentException exception) {
+        ErrorResponse errorResponse = new ErrorResponse(exception.getStatus(), exception.getErrorMessage(), exception.getErrorCode().name());
+        return ResponseEntity.status(exception.getStatus()).body(errorResponse);
+    }
+
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<ErrorResponse> handleMemberException(MemberException exception) {
         ErrorResponse errorResponse = new ErrorResponse(exception.getStatus(), exception.getErrorMessage(), exception.getErrorCode().name());

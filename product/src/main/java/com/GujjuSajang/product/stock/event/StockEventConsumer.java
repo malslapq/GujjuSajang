@@ -41,7 +41,7 @@ public class StockEventConsumer {
     private final RedissonClient redissonClient;
 
     // 재고 수정, 레디스에 반영
-    @KafkaListener(topics = "stock-update", groupId = "stock-service")
+    @KafkaListener(topics = "stock-update", groupId = "product-service")
     @Transactional
     public void updateStock(UpdateStockDto updateStockDto) {
         RLock lock = redissonClient.getLock("stock-lock-" + updateStockDto.getProductId());
@@ -59,7 +59,7 @@ public class StockEventConsumer {
     }
 
     // 주문 요청 이벤트 받아서 재고 있는지 확인 , 레디스에 있을 경우, 없을 경우 나눔
-    @KafkaListener(topics = {"create-orders"}, groupId = "stock-service")
+    @KafkaListener(topics = {"create-orders"}, groupId = "product-service")
     @Transactional
     public void checkStock(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
@@ -68,9 +68,10 @@ public class StockEventConsumer {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
             List<Long> productIds = createOrderEventDto.getCartProductsDtos().stream().map(CartProductsDto::getProductId).collect(Collectors.toList());
-            List<StockDto> stockDtos = stockRedisRepository.getAllByProductIds(productIds);
 
             lock.lock(10, TimeUnit.SECONDS); // 10초 동안 락
+
+            List<StockDto> stockDtos = stockRedisRepository.getAllByProductIds(productIds);
 
             if (stockDtos.isEmpty()) {
                 checkStockFromDB(createOrderEventDto.getCartProductsDtos(), productIds);
@@ -93,7 +94,7 @@ public class StockEventConsumer {
 
         for (StockDto stockDto : stockDtos) {
             int remainingStockCount = stockCountMap.getOrDefault(stockDto.getProductId(), 0);
-            stockDto.setCount(remainingStockCount);
+            stockDto.setCount(stockDto.getCount() + remainingStockCount);
         }
 
         for (Stock stock : stocks) {
@@ -129,24 +130,26 @@ public class StockEventConsumer {
             int stockCount = stockCountMap.get(cartProductsDto.getProductId());
 
             if (orderProductCount <= stockCount) {
-                stockCountMap.put(cartProductsDto.getProductId(), stockCount - orderProductCount);
+                stockCountMap.put(cartProductsDto.getProductId(), -orderProductCount);
             } else {
                 throw new OrdersException(ErrorCode.NOT_ENOUGH_STOCK);
             }
         }
     }
 
-    // 주문 , 주문 제품 생성 실패 이벤트 받아서 차감한 재고 복원
+    // 주문 , 결제 실패 ,주문 제품 생성 실패 이벤트 받아서 차감한 재고 복원
     @Transactional
-    @KafkaListener(topics = {"fail-create-orders", "fail-create-orders-product"}, groupId = "stock-service")
+    @KafkaListener(topics = {"fail-create-orders", "fail-payment", "fail-create-orders-product"}, groupId = "product-service")
     public void resetStock(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
+        RLock lock = redissonClient.getLock("reset-stock-lock");
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
 
-            List<Stock> stocks = getStocks(createOrderEventDto);
+            lock.lock(10, TimeUnit.SECONDS);
 
+            List<Stock> stocks = getStocks(createOrderEventDto);
             // 재고 복원할 제품 찾기
             for (CartProductsDto cartProductsDto : createOrderEventDto.getCartProductsDtos()) {
                 Stock stock = stocks.stream()
@@ -166,18 +169,24 @@ public class StockEventConsumer {
 
         } catch (Exception e) {
             log.error("reset stock error from message : {}", message, e);
+        } finally {
+            lock.unlock();
         }
     }
 
     // 주문 제품 상태 반품 완료 이벤트 받아서 재고 늘리기
-    @KafkaListener(topics = {"return-completed-ordersProduct"}, groupId = "stock-service")
+    @KafkaListener(topics = {"return-completed-ordersProduct"}, groupId = "product-service")
     @Transactional
     public void increaseStockForReturnedProducts(Message<?> message) {
         UpdateOrdersProductStatusDto updateOrdersProductStatusDto = null;
+        RLock lock = redissonClient.getLock("return-completed-stock-lock");
         try {
             updateOrdersProductStatusDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
             Map<Long, Integer> ordersProductCountsMap = updateOrdersProductStatusDto.getOrdersProductCountsMap();
+
+            lock.lock(10, TimeUnit.SECONDS);
+
             List<Stock> stocks = getAllStocksFromProductIds(updateOrdersProductStatusDto.getProductIds());
             for (Stock stock : stocks) {
                 stock.updateCount(ordersProductCountsMap.get(stock.getProductId()));
@@ -189,6 +198,8 @@ public class StockEventConsumer {
 
         } catch (Exception e) {
             eventProducer.sendEvent("fail-return-completed-ordersProduct", Objects.requireNonNull(updateOrdersProductStatusDto).getOrdersProductIds());
+        } finally {
+            lock.unlock();
         }
     }
 

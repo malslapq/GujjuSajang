@@ -11,6 +11,9 @@ public enum ErrorCode {
     // 헤더 json 파싱 관련
     FAIL_JSON_PARSE(HttpStatus.BAD_REQUEST, "JSON 파싱 실패"),
 
+    // 결제 관련
+    NOT_FOUND_PAYMENT(HttpStatus.BAD_REQUEST, "결제 정보를 찾을 수 없습니다."),
+
     // 재고 관련
     NOT_FOUND_STOCK(HttpStatus.NOT_FOUND, "해당 제품의 재고 정보를 찾을 수 없습니다."),
 
