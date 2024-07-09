@@ -5,6 +5,8 @@ import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.product.dto.ProductDetailDto;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.service.ProductService;
+import com.GujjuSajang.product.stock.dto.StockDto;
+import com.GujjuSajang.product.stock.service.StockService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final StockService stockService;
 
     // 제품 등록
     @PostMapping
@@ -36,6 +39,11 @@ public class ProductController {
     public ResponseEntity<ProductPageDto> getProducts(@RequestParam int page, @RequestParam int size, @RequestParam String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(productService.getProducts(pageable, keyword));
+    }
+
+    @GetMapping("/{product-id}/stock")
+    public ResponseEntity<StockDto> getStock(@PathVariable("product-id") Long productId) {
+        return ResponseEntity.ok().body(stockService.getStock(productId));
     }
 
 

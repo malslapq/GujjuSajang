@@ -23,7 +23,7 @@ public class StockRedisRepository {
 
     private static final String KEY_PREFIX = "stock::";
     private final RedisTemplate<String, Object> redisTemplate;
-    private static final int TTL_MIN = 5;
+    private static final int TTL_MIN = 10;
     private static final String SAVE_ALL_SCRIPT =
             "local ttl_min = 5 " +
                     "for i = 1, #KEYS do " +
