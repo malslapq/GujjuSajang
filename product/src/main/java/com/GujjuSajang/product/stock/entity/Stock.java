@@ -25,7 +25,7 @@ public class Stock extends BaseTimeEntity {
     private int count;
 
     public void updateCount(int count) {
-        this.count += count;
+        this.count = count;
     }
 
     public static Stock from(StockDto stockDto) {
