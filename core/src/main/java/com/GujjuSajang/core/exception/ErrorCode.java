@@ -16,6 +16,7 @@ public enum ErrorCode {
 
     // 재고 관련
     NOT_FOUND_STOCK(HttpStatus.NOT_FOUND, "해당 제품의 재고 정보를 찾을 수 없습니다."),
+    NOT_SALES_TIME(HttpStatus.BAD_REQUEST, "해당 제품 판매 시간이 아닙니다."),
 
     // 주문 관련
     NOT_ENOUGH_STOCK(HttpStatus.BAD_REQUEST, "상품의 재고가 부족합니다."),

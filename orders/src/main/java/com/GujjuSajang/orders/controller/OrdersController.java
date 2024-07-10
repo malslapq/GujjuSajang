@@ -1,6 +1,7 @@
 package com.GujjuSajang.orders.controller;
 
 import com.GujjuSajang.core.dto.CartDto;
+import com.GujjuSajang.core.dto.CartProductsDto;
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.orders.dto.OrdersPageDto;
@@ -25,7 +26,7 @@ public class OrdersController {
     public ResponseEntity<?> createOrder(HttpServletRequest request, @RequestBody CartDto cartDto) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         ordersEventProducer.createOrder(tokenMemberInfo.getId(), cartDto);
-        return ResponseEntity.ok().body("주문 요청 성공");
+        return ResponseEntity.ok().body("주문 요청");
     }
 
     // 주문 조회
@@ -34,6 +35,14 @@ public class OrdersController {
         Pageable pageable = PageRequest.of(page, size);
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         return ResponseEntity.ok(ordersService.getOrder(tokenMemberInfo.getId(), pageable));
+    }
+
+    // 선착순 주문
+    @PostMapping
+    public ResponseEntity<?> firstComeOrders(HttpServletRequest request, @RequestBody CartProductsDto cartProductsDto) {
+        TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
+        ordersEventProducer.createFirstComeOrders(tokenMemberInfo.getId(), cartProductsDto);
+        return ResponseEntity.ok().body("선착순 주문 요청");
     }
 
 
