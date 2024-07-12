@@ -30,9 +30,7 @@ public class MemberEventProducer {
     public MemberSignUpDto signUp(MemberSignUpDto memberSignUpDto) {
 
         String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
-        Member member;
-
-        member = memberRepository.save(Member.from(memberSignUpDto, encodedPassword));
+        Member member = memberRepository.save(Member.of(memberSignUpDto, encodedPassword));
 
         eventProducer.sendEvent("create-member",
                 CreateMemberEventDto.builder()

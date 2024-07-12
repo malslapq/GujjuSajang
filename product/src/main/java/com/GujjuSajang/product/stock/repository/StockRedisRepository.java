@@ -45,7 +45,7 @@ public class StockRedisRepository {
 
     public void save(StockDto stockDto) {
         try {
-            redisTemplate.opsForValue().set(KEY_PREFIX + stockDto.getProductId(), stockDto, Duration.ofSeconds(TTL_MIN));
+            redisTemplate.opsForValue().set(KEY_PREFIX + stockDto.getProductId(), stockDto, Duration.ofMinutes(TTL_MIN));
         } catch (Exception e) {
             throw new RedisException(ErrorCode.REDIS_OPERATION_FAILURE, e);
         }

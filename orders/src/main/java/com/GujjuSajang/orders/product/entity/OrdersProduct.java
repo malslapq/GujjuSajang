@@ -42,14 +42,14 @@ public class OrdersProduct {
     @LastModifiedDate
     private LocalDateTime updateAt;
 
-    public static OrdersProduct of(Long orderId, CartProductsDto cartProductsDto) {
+    public static OrdersProduct of(Long orderId, CartProductsDto cartProductsDto, DeliveryStatus deliveryStatus) {
         return OrdersProduct.builder()
                 .ordersId(orderId)
                 .productId(cartProductsDto.getProductId())
                 .name(cartProductsDto.getName())
                 .count(cartProductsDto.getCount())
                 .price(cartProductsDto.getPrice() * cartProductsDto.getCount())
-                .status(DeliveryStatus.COMPLETE)
+                .status(deliveryStatus)
                 .build();
     }
 

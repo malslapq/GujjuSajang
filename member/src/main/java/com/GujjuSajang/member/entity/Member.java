@@ -53,7 +53,7 @@ public class Member extends BaseTimeEntity {
         this.role = role;
     }
 
-    public static Member from(MemberSignUpDto memberSignUpDto, String encodedPassword) {
+    public static Member of(MemberSignUpDto memberSignUpDto, String encodedPassword) {
         return Member.builder()
                 .name(memberSignUpDto.getName())
                 .password(encodedPassword)

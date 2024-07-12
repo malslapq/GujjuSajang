@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PaymentStatus {
 
-    FAILED("결제 실패"),
     CANCEL("결제 취소"),
     COMPLETED("결제 완료");
 

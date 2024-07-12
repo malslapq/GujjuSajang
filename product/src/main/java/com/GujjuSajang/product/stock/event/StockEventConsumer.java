@@ -9,6 +9,7 @@ import com.GujjuSajang.product.stock.dto.StockDto;
 import com.GujjuSajang.product.stock.entity.Stock;
 import com.GujjuSajang.product.stock.repository.StockRedisRepository;
 import com.GujjuSajang.product.stock.repository.StockRepository;
+import com.GujjuSajang.product.stock.service.StockService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Sinks;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,12 +37,37 @@ public class StockEventConsumer {
     private final ObjectMapper objectMapper;
     private final StockRedisRepository stockRedisRepository;
     private final RedissonClient redissonClient;
+    private final Sinks.Many<StockDto> stockEventSink;
+    private final StockService stockService;
+
+    @KafkaListener(topics = {"success-validate-seller-id-from-set-sales-time"}, groupId = "product-service")
+    public void setSalesTime(Message<?> message) {
+
+        SetProductSalesStartTimeDto setProductSalesStartTimeDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
+        });
+
+        Stock stock = getStocks(setProductSalesStartTimeDto.getProductId());
+        stock.changeStartTime(setProductSalesStartTimeDto.getStartTime());
+
+        stockRepository.save(stock);
+
+    }
+
+    @KafkaListener(topics = {"stream-stock"}, groupId = "product-service")
+    public void listenStockUpdate(Message<?> message) {
+        List<StockDto> stockDtos = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
+        });
+        for (StockDto stockDto : stockDtos) {
+            stockEventSink.tryEmitNext(stockDto);
+        }
+
+    }
 
     // 재고 수정, 레디스에 반영
-    @KafkaListener(topics = "stock-update", groupId = "product-service")
     @Transactional
+    @KafkaListener(topics = {"stock-update"}, groupId = "product-service")
     public void updateStock(UpdateStockDto updateStockDto) {
-        RLock lock = redissonClient.getLock("stock-check-lock");
+        RLock lock = redissonClient.getLock("stock-lock");
         try {
             lock.lock(5, TimeUnit.SECONDS);
             Stock stock = stockRepository.findByProductId(updateStockDto.getProductId()).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_PRODUCT));
@@ -56,28 +83,33 @@ public class StockEventConsumer {
         }
     }
 
-    // 주문 요청 이벤트 받아서 재고 있는지 확인 , 레디스에 있을 경우, 없을 경우 나눔
-    @KafkaListener(topics = {"create-orders"}, groupId = "product-service")
+    // 주문 요청 이벤트 받아서 재고 있는지 확인
     @Transactional
+    @KafkaListener(topics = {"create-orders"}, groupId = "product-service")
     public void checkStock(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
-        RLock lock = redissonClient.getLock("stock-check-lock");
+        RLock lock = redissonClient.getLock("stock-lock");
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
             List<Long> productIds = createOrderEventDto.getCartProductsDtos().stream().map(CartProductsDto::getProductId).collect(Collectors.toList());
 
-            lock.lock(10, TimeUnit.SECONDS); // 10초 동안 락
+            lock.lock(15, TimeUnit.SECONDS); // 10초 동안 락
 
-            List<StockDto> stockDtos = stockRedisRepository.getAllByProductIds(productIds);
+            List<StockDto> cachedStocks = stockRedisRepository.getAllByProductIds(productIds);
+            Set<Long> cacheHitProductIds = cachedStocks.stream().map(StockDto::getProductId).collect(Collectors.toSet());
 
-            if (stockDtos.isEmpty()) {
-                checkStockFromDB(createOrderEventDto.getCartProductsDtos(), productIds);
-            } else {
-                checkStockFromRedis(createOrderEventDto.getCartProductsDtos(), productIds, stockDtos);
-            }
+            List<Long> cacheMissProductIds = productIds.stream().filter(productId -> !cacheHitProductIds.contains(productId)).toList();
+            cachedStocks.addAll(stockRepository.findAllByProductIdIn(cacheMissProductIds).stream().map(StockDto::from).toList());
+
+            Map<Long, Integer> stockCountMap = cachedStocks.stream().collect(Collectors.toMap(StockDto::getProductId, StockDto::getCount));
+
+            checkStocks(createOrderEventDto.getCartProductsDtos(), stockCountMap);
+
+            stockRedisRepository.saveAll(cachedStocks);
 
             eventProducer.sendEvent("success-check-stock", createOrderEventDto);
+
         } catch (Exception e) {
             log.error("check stock error message : {}", createOrderEventDto, e);
         } finally {
@@ -88,34 +120,20 @@ public class StockEventConsumer {
     }
 
     // 선착순 구매 재고 확인
+    @Transactional
     @KafkaListener(topics = {"create-first-come-orders"}, groupId = "product-service")
     public void checkStockAndStartTime(Message<?> message) {
         CreateFirstComeOrdersEventDto createFirstComeOrdersEventDto = null;
-        RLock lock = redissonClient.getLock("stock-check-lock-from-first-come-orders");
+        RLock lock = redissonClient.getLock("stock-lock");
         try {
             createFirstComeOrdersEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
 
             lock.lock(10, TimeUnit.SECONDS); // 10초 동안 락
-            Optional<StockDto> stockDto = stockRedisRepository.get(createFirstComeOrdersEventDto.getCartProductsDto().getProductId());
+            StockDto stockDto = stockService.getStock(createFirstComeOrdersEventDto.getCartProductsDto().getProductId());
+            validateStockAndSalesTime(createFirstComeOrdersEventDto, stockDto.getCount(), stockDto.getStartTime());
 
-            if (stockDto.isEmpty()) {
-                Stock stock = getStocks(createFirstComeOrdersEventDto.getCartProductsDto().getProductId());
-
-                validateStockAndSalesTime(createFirstComeOrdersEventDto, stock.getCount(), stock.getStartTime());
-
-                stock.updateCount(-createFirstComeOrdersEventDto.getCartProductsDto().getCount());
-                stockRedisRepository.save(StockDto.from(stock));
-                stockRepository.save(stock);
-            } else {
-
-                validateStockAndSalesTime(createFirstComeOrdersEventDto, stockDto.get().getCount(), stockDto.get().getStartTime());
-
-                stockDto.get().setCount(stockDto.get().getCount() - createFirstComeOrdersEventDto.getCartProductsDto().getCount());
-
-                stockRepository.setStockCount(createFirstComeOrdersEventDto.getCartProductsDto().getProductId(), stockDto.get().getCount());
-                stockRedisRepository.save(stockDto.get());
-            }
+            eventProducer.sendEvent("stream-stock", List.of(stockDto));
 
             eventProducer.sendEvent("success-check-stock", CreateOrderEventDto.builder()
                     .memberId(createFirstComeOrdersEventDto.getMemberId())
@@ -131,39 +149,50 @@ public class StockEventConsumer {
         }
     }
 
-    // 주문 , 결제 실패 ,주문 제품 생성 실패 이벤트 받아서 차감한 재고 복원
+    // 재고 차감
     @Transactional
-    @KafkaListener(topics = {"fail-create-orders", "fail-payment", "fail-create-orders-product"}, groupId = "product-service")
-    public void resetStock(Message<?> message) {
+    @KafkaListener(topics = {"success-create-orders-product"}, groupId = "product-service")
+    public void reduceStock(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
-        RLock lock = redissonClient.getLock("reset-stock-lock");
+        RLock lock = redissonClient.getLock("stock-lock");
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
-            List<Long> productIds = createOrderEventDto.getCartProductsDtos().stream().map(CartProductsDto::getProductId).toList();
 
-            lock.lock(10, TimeUnit.SECONDS);
+            List<Long> productIds = createOrderEventDto.getCartProductsDtos().stream().map(CartProductsDto::getProductId).collect(Collectors.toList());
 
-            List<Stock> stocks = getAllStocksFromProductIds(productIds);
-            // 재고 복원할 제품 찾기
-            for (CartProductsDto cartProductsDto : createOrderEventDto.getCartProductsDtos()) {
-                Stock stock = stocks.stream()
-                        .filter(s -> s.getProductId().equals(cartProductsDto.getProductId()))
-                        .findFirst()
-                        .orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_PRODUCT));
-                // 복원
-                stock.updateCount(cartProductsDto.getCount());
+            lock.lock(15, TimeUnit.SECONDS); // 15초 동안 락
+
+            List<StockDto> cachedStocks = stockRedisRepository.getAllByProductIds(productIds);
+            Set<Long> cacheHitProductIds = cachedStocks.stream().map(StockDto::getProductId).collect(Collectors.toSet());
+            List<Stock> stocks = stockRepository.findAllByProductIdIn(productIds);
+
+            cachedStocks.addAll(stocks.stream().filter(stock -> !cacheHitProductIds.contains(stock.getProductId())).map(StockDto::from).toList());
+
+            Map<Long, Integer> stockCountMap = createOrderEventDto.getCartProductsDtos().stream().collect(Collectors.toMap(CartProductsDto::getProductId, CartProductsDto::getCount));
+
+            for (StockDto stockDto : cachedStocks) {
+                int ordersProductCount = stockCountMap.getOrDefault(stockDto.getProductId(), 0);
+                if (ordersProductCount > stockDto.getCount()) {
+                    throw new OrdersException(ErrorCode.NOT_ENOUGH_STOCK);
+                }
+                stockDto.setCount(stockDto.getCount() - ordersProductCount);
             }
 
-            // db에 저장하고 변경 내용 Redis에 저장
-            List<StockDto> stockDtos = stocks.stream().map(StockDto::from).collect(Collectors.toList());
-            stockRedisRepository.saveAll(stockDtos);
+            for (Stock stock : stocks) {
+                int ordersProductCount = stockCountMap.getOrDefault(stock.getProductId(), 0);
+                if (ordersProductCount > stock.getCount()) {
+                    throw new OrdersException(ErrorCode.NOT_ENOUGH_STOCK);
+                }
+                stock.updateCount(-ordersProductCount);
+            }
+
+            stockRedisRepository.saveAll(cachedStocks);
             stockRepository.saveAll(stocks);
 
-            eventProducer.sendEvent("reset-stock-count", createOrderEventDto.getOrderId());
-
         } catch (Exception e) {
-            log.error("reset stock error from message : {}", message, e);
+            log.error("error reduceStock stock error orderId : {}", Objects.requireNonNull(createOrderEventDto).getOrderId(), e);
+            eventProducer.sendEvent("fail-reduce-stock", createOrderEventDto);
         } finally {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();
@@ -171,12 +200,22 @@ public class StockEventConsumer {
         }
     }
 
+    private static void checkStocks(List<CartProductsDto> createOrderEventDto, Map<Long, Integer> stockCountMap) {
+        for (CartProductsDto cartProductsDto : createOrderEventDto) {
+            int orderProductCount = cartProductsDto.getCount();
+            int stockCount = stockCountMap.get(cartProductsDto.getProductId());
+            if (orderProductCount > stockCount) {
+                throw new OrdersException(ErrorCode.NOT_ENOUGH_STOCK);
+            }
+        }
+    }
+
     // 주문 제품 상태 반품 완료 이벤트 받아서 재고 늘리기
-    @KafkaListener(topics = {"return-completed-ordersProduct"}, groupId = "product-service")
     @Transactional
+    @KafkaListener(topics = {"return-completed-ordersProduct"}, groupId = "product-service")
     public void increaseStockForReturnedProducts(Message<?> message) {
         UpdateOrdersProductStatusDto updateOrdersProductStatusDto = null;
-        RLock lock = redissonClient.getLock("return-completed-stock-lock");
+        RLock lock = redissonClient.getLock("stock-lock");
         try {
             updateOrdersProductStatusDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
@@ -187,6 +226,7 @@ public class StockEventConsumer {
             List<Stock> stocks = getAllStocksFromProductIds(updateOrdersProductStatusDto.getProductIds());
             for (Stock stock : stocks) {
                 stock.updateCount(ordersProductCountsMap.get(stock.getProductId()));
+
             }
             List<StockDto> stockDtos = stocks.stream().map(StockDto::from).toList();
 
@@ -198,56 +238,6 @@ public class StockEventConsumer {
         } finally {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();
-            }
-        }
-    }
-
-    private void checkStockFromRedis(List<CartProductsDto> cartProductsDtos, List<Long> productIds, List<StockDto> stockDtos) {
-        Map<Long, Integer> stockCountMap = stockDtos.stream().collect(Collectors.toMap(StockDto::getProductId, StockDto::getCount));
-        List<Stock> stocks = getAllStocksFromProductIds(productIds);
-        deductStockForOrders(cartProductsDtos, stockCountMap);
-
-        for (StockDto stockDto : stockDtos) {
-            int remainingStockCount = stockCountMap.getOrDefault(stockDto.getProductId(), 0);
-            stockDto.setCount(stockDto.getCount() + remainingStockCount);
-        }
-
-        for (Stock stock : stocks) {
-            int remainingStockCount = stockCountMap.getOrDefault(stock.getProductId(), 0);
-            stock.updateCount(remainingStockCount);
-        }
-
-        stockRedisRepository.saveAll(stockDtos);
-        stockRepository.saveAll(stocks);
-
-    }
-
-    private void checkStockFromDB(List<CartProductsDto> cartProductsDtos, List<Long> productIds) {
-        List<Stock> stocks = getAllStocksFromProductIds(productIds);
-        Map<Long, Integer> stockCountMap = stocks.stream().collect(Collectors.toMap(Stock::getProductId, Stock::getCount));
-        deductStockForOrders(cartProductsDtos, stockCountMap);
-
-        for (Stock stock : stocks) {
-            int remainingStockCount = stockCountMap.getOrDefault(stock.getProductId(), 0);
-            stock.updateCount(remainingStockCount);
-        }
-
-        List<StockDto> stockDtos = stocks.stream().map(StockDto::from).toList();
-
-        stockRedisRepository.saveAll(stockDtos);
-        stockRepository.saveAll(stocks);
-    }
-
-
-    private void deductStockForOrders(List<CartProductsDto> cartProductsDtos, Map<Long, Integer> stockCountMap) {
-        for (CartProductsDto cartProductsDto : cartProductsDtos) {
-            int orderProductCount = cartProductsDto.getCount();
-            int stockCount = stockCountMap.get(cartProductsDto.getProductId());
-
-            if (orderProductCount <= stockCount) {
-                stockCountMap.put(cartProductsDto.getProductId(), -orderProductCount);
-            } else {
-                throw new OrdersException(ErrorCode.NOT_ENOUGH_STOCK);
             }
         }
     }

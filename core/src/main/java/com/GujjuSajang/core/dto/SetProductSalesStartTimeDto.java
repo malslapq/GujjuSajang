@@ -2,15 +2,17 @@ package com.GujjuSajang.core.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateFirstComeOrdersEventDto {
+public class SetProductSalesStartTimeDto {
 
-    private Long ordersId;
+    private Long productId;
     private Long memberId;
-    private CartProductsDto cartProductsDto;
+    private LocalDateTime startTime;
 
 }

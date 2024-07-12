@@ -26,7 +26,24 @@ public class PaymentEventConsumer {
     private final PaymentRepository paymentRepository;
     private final Random random = new Random();
 
-    @KafkaListener(topics = {"success-create-orders"}, groupId = "payment-service")
+    @KafkaListener(topics = {"success-check-stock"}, groupId = "payment-service")
+    public void paymentView(Message<?> message) {
+        CreateOrderEventDto createOrderEventDto = null;
+        try {
+            createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
+            });
+
+            if (random.nextInt(5) < 1) {
+                throw new RuntimeException("고객 변심 이탈");
+            }
+
+            eventProducer.sendEvent("paying", createOrderEventDto);
+        } catch (Exception e) {
+            eventProducer.sendEvent("fail-payment", createOrderEventDto);
+        }
+    }
+
+    @KafkaListener(topics = {"paying"}, groupId = "payment-service")
     public void createPayment(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
@@ -34,17 +51,17 @@ public class PaymentEventConsumer {
             });
 
             if (random.nextInt(5) < 1) {
-                throw new RuntimeException("고객 귀책 이탈 시뮬레이션 20% 당첨");
+                throw new RuntimeException("결제 실패");
             }
 
             int amount = createOrderEventDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum();
 
-            paymentRepository.save(Payment.builder()
+            Payment payment = paymentRepository.save(Payment.builder()
                     .memberId(createOrderEventDto.getMemberId())
-                    .ordersId(createOrderEventDto.getOrderId())
                     .status(PaymentStatus.COMPLETED)
                     .amount(amount)
                     .build());
+            createOrderEventDto.setPaymentId(payment.getId());
             eventProducer.sendEvent("success-payment", createOrderEventDto);
         } catch (Exception e) {
             eventProducer.sendEvent("fail-payment", createOrderEventDto);
@@ -52,7 +69,7 @@ public class PaymentEventConsumer {
     }
 
     @KafkaListener(topics = {"fail-payment"}, groupId = "payment-service")
-    public void failPayment(Message<?> message) {
+    public void failedPayment(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
@@ -60,26 +77,27 @@ public class PaymentEventConsumer {
 
             int amount = createOrderEventDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum();
 
-            paymentRepository.save(Payment.builder()
+            Payment payment = paymentRepository.save(Payment.builder()
                     .memberId(createOrderEventDto.getMemberId())
-                    .ordersId(createOrderEventDto.getOrderId())
-                    .status(PaymentStatus.FAILED)
+                    .status(PaymentStatus.CANCEL)
                     .amount(amount)
                     .build());
-
+            createOrderEventDto.setPaymentId(payment.getId());
+            eventProducer.sendEvent("failed-payment", createOrderEventDto);
         } catch (Exception e) {
-            log.error("error create failed payment event message : {}", createOrderEventDto, e);
+            log.error("fail-payment", e);
         }
     }
 
-    @KafkaListener(topics = {"fail-create-orders-product"}, groupId = "payment-service")
-    public void returnPaymentFromOrdersProducts(Message<?> message) {
+    // 결제 취소 처리
+    @KafkaListener(topics = {"fail-create-orders-product", "fail-create-orders", "fail-reduce-stock"}, groupId = "payment-service")
+    public void cancelPayment(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
 
-            Payment payment = paymentRepository.findByOrdersId(createOrderEventDto.getOrderId()).orElseThrow(() -> new PaymentException(ErrorCode.NOT_FOUND_PAYMENT));
+            Payment payment = paymentRepository.findById(createOrderEventDto.getPaymentId()).orElseThrow(() -> new PaymentException(ErrorCode.NOT_FOUND_PAYMENT));
             payment.cancelPayment();
             paymentRepository.save(payment);
 

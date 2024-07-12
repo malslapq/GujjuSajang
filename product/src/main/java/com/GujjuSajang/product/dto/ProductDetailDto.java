@@ -1,7 +1,6 @@
 package com.GujjuSajang.product.dto;
 
 import com.GujjuSajang.product.entity.Product;
-import com.GujjuSajang.product.stock.dto.StockDto;
 import com.GujjuSajang.product.stock.entity.Stock;
 import lombok.*;
 

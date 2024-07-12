@@ -13,6 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+
+import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final StockService stockService;
+    private final Sinks.Many<StockDto> stockSink;
 
     // 제품 등록
     @PostMapping
@@ -41,9 +46,20 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProducts(pageable, keyword));
     }
 
+    // 제품 재고 조회
     @GetMapping("/{product-id}/stock")
     public ResponseEntity<StockDto> getStock(@PathVariable("product-id") Long productId) {
         return ResponseEntity.ok().body(stockService.getStock(productId));
+    }
+
+    // 실시간 재고 조회
+    @GetMapping("/{product-id}/stock/stream")
+    public Flux<Object> getStockStream(@PathVariable("product-id") Long productId) {
+        return Flux.merge(
+                stockService.getStockStream(productId).flux().map(stockDto -> (Object) stockDto),
+                stockSink.asFlux().filter(stockDto -> stockDto.getProductId().equals(productId)).map(stockDto -> (Object) stockDto),
+                Flux.interval(Duration.ofSeconds(20)).map(tick -> (Object) "health check")
+        );
     }
 
 

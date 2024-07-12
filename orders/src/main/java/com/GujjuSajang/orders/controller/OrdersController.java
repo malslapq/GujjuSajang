@@ -38,7 +38,7 @@ public class OrdersController {
     }
 
     // 선착순 주문
-    @PostMapping
+    @PostMapping("/firstcome")
     public ResponseEntity<?> firstComeOrders(HttpServletRequest request, @RequestBody CartProductsDto cartProductsDto) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         ordersEventProducer.createFirstComeOrders(tokenMemberInfo.getId(), cartProductsDto);

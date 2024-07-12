@@ -21,24 +21,23 @@ public class Orders extends BaseTimeEntity {
     @Column(nullable = false)
     private Long memberId;
     @Column(nullable = false)
+    private Long paymentId;
+    @Column(nullable = false)
     private int totalPrice;
     @Enumerated(EnumType.STRING)
     private OrdersStatus status;
 
-    public static Orders from(CreateOrderEventDto createOrderEventDto) {
+    public static Orders of(CreateOrderEventDto createOrderEventDto, OrdersStatus status) {
         return Orders.builder()
                 .memberId(createOrderEventDto.getMemberId())
+                .paymentId(createOrderEventDto.getPaymentId())
                 .totalPrice(createOrderEventDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum())
-                .status(OrdersStatus.PAYMENT_PENDING)
+                .status(status)
                 .build();
     }
 
-    public void successOrders() {
-        this.status = OrdersStatus.COMPLETE;
-    }
-
-    public void failOrdersFromPayment() {
-        this.status = OrdersStatus.FAILED_PAYMENT;
+    public void failOrdersFromReduceStock() {
+        this.status = OrdersStatus.NOT_ENOUGH_STOCK;
     }
 
     public void failOrdersFromOrdersProducts() {

@@ -1,12 +1,12 @@
-package com.GujjuSajang.member.service;
+package com.GujjuSajang.member.seller.service;
 
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.MemberException;
 import com.GujjuSajang.core.type.MemberRole;
-import com.GujjuSajang.member.seller.dto.SellerDto;
 import com.GujjuSajang.member.entity.Member;
-import com.GujjuSajang.member.seller.entity.Seller;
 import com.GujjuSajang.member.repository.MemberRepository;
+import com.GujjuSajang.member.seller.dto.SellerDto;
+import com.GujjuSajang.member.seller.entity.Seller;
 import com.GujjuSajang.member.seller.repository.SellerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,5 @@ public class SellerService {
         member.changeRole(MemberRole.SELLER);
         return SellerDto.from(sellerRepository.save(Seller.from(sellerDto)));
     }
-
 
 }

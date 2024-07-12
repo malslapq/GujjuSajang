@@ -24,7 +24,6 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long memberId;
-    private Long ordersId;
     private int amount;
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;

@@ -1,5 +1,6 @@
 package com.GujjuSajang.member.seller.event;
 
+import com.GujjuSajang.core.dto.SetProductSalesStartTimeDto;
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.dto.UpdateStockDto;
 import com.GujjuSajang.core.exception.ErrorCode;
@@ -10,6 +11,8 @@ import com.GujjuSajang.member.util.EventProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +50,18 @@ public class SellerEventProducer {
         if (!productId.equals(dtoToProductId)) {
             throw new MemberException(ErrorCode.MISS_MATCH_PRODUCT);
         }
+    }
+
+    public void setProductSalesTime(TokenMemberInfo tokenMemberInfo, Long productId, LocalDateTime startTime) {
+        validateMemberRole(tokenMemberInfo.getRole());
+
+        eventProducer.sendEvent(
+                "request-set-product-sales-time",
+                SetProductSalesStartTimeDto.builder()
+                        .memberId(tokenMemberInfo.getId())
+                        .productId(productId)
+                        .startTime(startTime)
+                        .build());
+
     }
 }

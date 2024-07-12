@@ -5,11 +5,13 @@ import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.member.seller.dto.ProductStockUpdateDto;
 import com.GujjuSajang.member.seller.dto.SellerDto;
 import com.GujjuSajang.member.seller.event.SellerEventProducer;
-import com.GujjuSajang.member.service.SellerService;
+import com.GujjuSajang.member.seller.service.SellerService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/seller")
@@ -33,6 +35,14 @@ public class SellerController {
                                                              HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         return ResponseEntity.ok(sellerEventProducer.updateProductStock(tokenMemberInfo, productId, productStockUpdateDto));
+    }
+
+    // 예약 제품 판매 시간 등록
+    @PostMapping("/product/{product-id}")
+    public ResponseEntity<?> setProductSalesTime(@PathVariable("product-id") Long productId, @RequestParam String startTime, HttpServletRequest request) {
+        TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
+        sellerEventProducer.setProductSalesTime(tokenMemberInfo, productId, LocalDateTime.parse(startTime));
+        return ResponseEntity.ok().body("판매 시간 등록 요청 성공");
     }
 
 
