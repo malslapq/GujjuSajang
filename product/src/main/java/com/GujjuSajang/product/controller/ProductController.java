@@ -2,7 +2,8 @@ package com.GujjuSajang.product.controller;
 
 import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.util.RequestHeaderUtil;
-import com.GujjuSajang.product.dto.ProductDetailDto;
+import com.GujjuSajang.product.dto.CreateProductDto;
+import com.GujjuSajang.product.dto.ProductDetailDtoResponse;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.service.ProductService;
 import com.GujjuSajang.product.stock.dto.StockDto;
@@ -28,14 +29,14 @@ public class ProductController {
 
     // 제품 등록
     @PostMapping
-    public ResponseEntity<ProductDetailDto> createProduct(@RequestBody ProductDetailDto productDetailDto, HttpServletRequest request) {
+    public ResponseEntity<CreateProductDto.Response> createProduct(@RequestBody CreateProductDto.Request productDetailDtoRequest, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok(productService.createProduct(tokenMemberInfo, productDetailDto));
+        return ResponseEntity.ok(productService.createProduct(tokenMemberInfo, productDetailDtoRequest));
     }
 
     // 제품 상세 조회
     @GetMapping("/{product-id}")
-    public ResponseEntity<ProductDetailDto> getProduct(@PathVariable("product-id") Long productId) {
+    public ResponseEntity<ProductDetailDtoResponse> getProduct(@PathVariable("product-id") Long productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 

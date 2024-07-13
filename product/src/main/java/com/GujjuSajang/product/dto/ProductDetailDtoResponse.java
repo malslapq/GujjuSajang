@@ -9,19 +9,17 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class ProductDetailDto {
+public class ProductDetailDtoResponse {
 
     private Long id;
-    private Long sellerId;
     private String name;
     private int price;
     private String description;
     private int count;
 
-    public static ProductDetailDto of(Product product, Stock stock) {
-        return ProductDetailDto.builder()
+    public static ProductDetailDtoResponse of(Product product, Stock stock) {
+        return ProductDetailDtoResponse.builder()
                 .id(product.getId())
-                .sellerId(product.getSellerId()) // Assuming seller is an entity
                 .name(product.getName())
                 .price(product.getPrice())
                 .description(product.getDescription())

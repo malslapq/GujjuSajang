@@ -5,7 +5,8 @@ import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.MemberException;
 import com.GujjuSajang.core.exception.ProductException;
 import com.GujjuSajang.core.type.MemberRole;
-import com.GujjuSajang.product.dto.ProductDetailDto;
+import com.GujjuSajang.product.dto.CreateProductDto;
+import com.GujjuSajang.product.dto.ProductDetailDtoResponse;
 import com.GujjuSajang.product.dto.ProductDto;
 import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.entity.Product;
@@ -15,6 +16,7 @@ import com.GujjuSajang.product.stock.entity.Stock;
 import com.GujjuSajang.product.stock.repository.StockRedisRepository;
 import com.GujjuSajang.product.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,19 +36,19 @@ public class ProductService {
 
     // 제품 등록
     @Transactional
-    public ProductDetailDto createProduct(TokenMemberInfo tokenMemberInfo, ProductDetailDto productDetailDto) {
+    public CreateProductDto.Response createProduct(TokenMemberInfo tokenMemberInfo, CreateProductDto.Request productDetailDtoRequest) {
 
         memberRoleCheck(tokenMemberInfo.getRole());
 
-        productDetailDto.setSellerId(tokenMemberInfo.getId());
+        Product product = productRepository.save(Product.of(productDetailDtoRequest, tokenMemberInfo.getId()));
 
-        Product product = productRepository.save(Product.from(productDetailDto));
+        stockRepository.save(Stock.builder()
+                .productId(product.getId())
+                .count(0)
+                .build()
+        );
 
-        return ProductDetailDto.of(product,
-                stockRepository.save(Stock.builder()
-                        .productId(product.getId())
-                        .count(0)
-                        .build()));
+        return CreateProductDto.Response.from(product);
     }
 
     // 제품 검색
@@ -71,8 +73,9 @@ public class ProductService {
     }
 
     // 상품 상세 조회
+    @Cacheable(value = "product", key = "#productId")
     @Transactional(readOnly = true)
-    public ProductDetailDto getProduct(Long productId) {
+    public ProductDetailDtoResponse getProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_PRODUCT));
         Optional<StockDto> stockDto = stockRedisRepository.get(productId);
 
@@ -80,8 +83,7 @@ public class ProductService {
                 ? Stock.from(stockDto.get())
                 : stockRepository.findByProductId(productId).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_STOCK));
 
-        // ProductDetailDto 생성 및 반환
-        return ProductDetailDto.of(product, stock);
+        return ProductDetailDtoResponse.of(product, stock);
     }
 
     private void memberRoleCheck(MemberRole role) {
