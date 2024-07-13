@@ -4,7 +4,7 @@ import com.GujjuSajang.core.dto.TokenMemberInfo;
 import com.GujjuSajang.core.util.RequestHeaderUtil;
 import com.GujjuSajang.member.dto.MemberLoginDto;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
-import com.GujjuSajang.member.dto.MemberUpdateDetailDto;
+import com.GujjuSajang.member.dto.MemberDetailDto;
 import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
 import com.GujjuSajang.member.event.MemberEventProducer;
 import com.GujjuSajang.member.service.MemberService;
@@ -23,13 +23,13 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<MemberSignUpDto> signUp(@RequestBody @Valid MemberSignUpDto memberSignUpDto) {
+    public ResponseEntity<MemberSignUpDto.Response> signUp(@RequestBody @Valid MemberSignUpDto.Request memberSignUpDto) {
         return ResponseEntity.ok().body(memberEventProducer.signUp(memberSignUpDto));
     }
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<TokenMemberInfo> login(@RequestBody @Valid MemberLoginDto memberLoginDto) {
+    public ResponseEntity<MemberLoginDto.Response> login(@RequestBody @Valid MemberLoginDto.Request memberLoginDto) {
         return ResponseEntity.ok().body(memberService.login(memberLoginDto));
     }
 
@@ -41,21 +41,21 @@ public class MemberController {
 
     // 상세 정보 조회
     @GetMapping("/detail")
-    public ResponseEntity<MemberUpdateDetailDto> getDetail(HttpServletRequest request) {
+    public ResponseEntity<MemberDetailDto.Response> getDetail(HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         return ResponseEntity.ok().body(memberService.getDetail(tokenMemberInfo.getId()));
     }
 
     // 정보 수정
     @PatchMapping("/detail")
-    public ResponseEntity<MemberUpdateDetailDto> updateDetail(@RequestBody @Valid MemberUpdateDetailDto memberUpdateDetailDto, HttpServletRequest request) {
+    public ResponseEntity<MemberDetailDto.Response> updateDetail(@RequestBody @Valid MemberDetailDto.Request memberDetailDto, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
-        return ResponseEntity.ok().body(memberService.updateConsumer(tokenMemberInfo.getId(), memberUpdateDetailDto));
+        return ResponseEntity.ok().body(memberService.updateConsumer(tokenMemberInfo.getId(), memberDetailDto));
     }
 
     // 비밀번호 수정
     @PatchMapping("/detail/password")
-    public ResponseEntity<MemberUpdatePasswordDto.Response> updatePassword(@RequestBody @Valid MemberUpdatePasswordDto memberUpdatePasswordDto, HttpServletRequest request) {
+    public ResponseEntity<MemberUpdatePasswordDto.Response> updatePassword(@RequestBody @Valid MemberUpdatePasswordDto.Request memberUpdatePasswordDto, HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         return ResponseEntity.ok().body(memberService.updatePassword(tokenMemberInfo.getId(), memberUpdatePasswordDto));
     }

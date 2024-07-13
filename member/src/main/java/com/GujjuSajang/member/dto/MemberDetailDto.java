@@ -1,26 +1,25 @@
 package com.GujjuSajang.member.dto;
 
 import com.GujjuSajang.member.entity.Member;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-public class MemberSignUpDto {
+public class MemberDetailDto {
 
     @Getter
     @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class Request {
-        @NotBlank
-        private String name;
+
         @NotBlank
         private String password;
-        @NotBlank
-        @Email
-        private String mail;
         @NotBlank
         private String phone;
         @NotBlank
         private String address;
+
     }
 
     @Getter
@@ -30,18 +29,19 @@ public class MemberSignUpDto {
     @Builder
     public static class Response {
 
+        private Long id;
         @NotBlank
         private String name;
         @NotBlank
-        @Email
         private String mail;
         @NotBlank
         private String phone;
         @NotBlank
         private String address;
 
-        public static MemberSignUpDto.Response from(Member member) {
-            return MemberSignUpDto.Response.builder()
+        public static MemberDetailDto.Response from(Member member) {
+            return MemberDetailDto.Response.builder()
+                    .id(member.getId())
                     .name(member.getName())
                     .mail(member.getMail())
                     .phone(member.getPhone())

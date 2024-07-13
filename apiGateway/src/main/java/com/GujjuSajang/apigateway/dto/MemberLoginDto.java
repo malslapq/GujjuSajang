@@ -1,9 +1,10 @@
-package com.GujjuSajang.member.dto;
+package com.GujjuSajang.apigateway.dto;
 
-import com.GujjuSajang.core.type.MemberRole;
+import com.GujjuSajang.apigateway.type.MemberRole;
 import lombok.*;
 
 public class MemberLoginDto {
+
 
     @AllArgsConstructor
     @NoArgsConstructor

@@ -27,7 +27,7 @@ public class MemberEventProducer {
 
     // 회원 가입
     @Transactional
-    public MemberSignUpDto signUp(MemberSignUpDto memberSignUpDto) {
+    public MemberSignUpDto.Response signUp(MemberSignUpDto.Request memberSignUpDto) {
 
         String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
         Member member = memberRepository.save(Member.of(memberSignUpDto, encodedPassword));
@@ -40,7 +40,7 @@ public class MemberEventProducer {
                         .build()
         );
 
-        return MemberSignUpDto.from(member);
+        return MemberSignUpDto.Response.from(member);
     }
 
     private String getVerifiedCode(int codeLength) {
