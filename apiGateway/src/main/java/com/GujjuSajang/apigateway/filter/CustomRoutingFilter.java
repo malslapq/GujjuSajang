@@ -1,5 +1,6 @@
 package com.GujjuSajang.apigateway.filter;
 
+import com.GujjuSajang.apigateway.dto.MemberLoginDto;
 import com.GujjuSajang.apigateway.dto.TokenInfo;
 import com.GujjuSajang.apigateway.dto.TokenMemberInfo;
 import com.GujjuSajang.apigateway.service.AuthService;
@@ -41,7 +42,7 @@ public class CustomRoutingFilter implements WebFilter {
 
                 // 로그인 요청을 멤버 서비스로 전달
                 return webClient.post()
-                        .uri("http://member/login") // Eureka를 통해 member 서비스로 요청을 보냅니다
+                        .uri("http://member/login") // Eureka를 통해 member 서비스로 요청
                         .contentType(MediaType.APPLICATION_JSON) // 콘텐츠 타입 설정
                         .bodyValue(body)
                         .retrieve()
@@ -51,10 +52,15 @@ public class CustomRoutingFilter implements WebFilter {
                             response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
                             try {
                                 // 멤버 서비스의 응답을 TokenMemberInfo로 변환
-                                TokenMemberInfo tokenMemberInfo = objectMapper.readValue(responseBody, TokenMemberInfo.class);
+                                MemberLoginDto.Response memberLoginResponse = objectMapper.readValue(responseBody, MemberLoginDto.Response.class);
 
                                 // JWT 토큰 생성
-                                TokenInfo tokenInfo = authService.issueTokens(tokenMemberInfo);
+                                TokenInfo tokenInfo = authService.issueTokens(TokenMemberInfo.builder()
+                                        .id(memberLoginResponse.getId())
+                                        .mail(memberLoginResponse.getMail())
+                                        .role(memberLoginResponse.getRole())
+                                        .mailVerified(memberLoginResponse.isMailVerified())
+                                        .build());
 
                                 // 쿠키 설정
                                 ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", tokenInfo.getAccessToken())

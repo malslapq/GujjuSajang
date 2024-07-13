@@ -103,4 +103,8 @@ public class AuthService {
         );
     }
 
+    public void logout(RefreshTokenDto refreshTokenDto) {
+        TokenMemberInfo tokenMemberInfo = parseRefreshToken(refreshTokenDto.getRefreshToken());
+        authRedisRepository.delete(tokenMemberInfo.getId());
+    }
 }

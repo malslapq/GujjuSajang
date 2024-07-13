@@ -23,10 +23,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter implements WebFilter {
 
-    public static final String TOKEN_PATH = "/token";
+    public static final String LOGOUT_PATH = "/logout";
+    public static final String TOKEN_PATH = "/refresh";
     public static final String LOGIN_PATH = "/member/login";
     public static final String SIGNUP_PATH = "/member/signup";
-    public static final String MAILVERIFIED_PATH = "/member/mail-verified";
+    public static final String MAIL_VERIFIED_PATH = "/member/mail-verified";
     private static final String BEARER_PREFIX = "Bearer ";
     private final AuthService authService;
     private final ObjectMapper objectMapper;
@@ -36,7 +37,8 @@ public class JwtFilter implements WebFilter {
             LOGIN_PATH,
             SIGNUP_PATH,
             TOKEN_PATH,
-            MAILVERIFIED_PATH
+            MAIL_VERIFIED_PATH,
+            LOGOUT_PATH
     );
 
     // dodilter와 같은 부분 근데 Mono는 비동기 처리임
