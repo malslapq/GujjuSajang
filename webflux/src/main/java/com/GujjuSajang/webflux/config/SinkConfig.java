@@ -1,6 +1,6 @@
-package com.GujjuSajang.product.config;
+package com.GujjuSajang.webflux.config;
 
-import com.GujjuSajang.product.stock.dto.StockDto;
+import com.GujjuSajang.webflux.dto.StockDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Sinks;

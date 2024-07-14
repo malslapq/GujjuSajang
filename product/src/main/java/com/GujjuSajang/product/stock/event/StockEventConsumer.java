@@ -37,10 +37,9 @@ public class StockEventConsumer {
     private final ObjectMapper objectMapper;
     private final StockRedisRepository stockRedisRepository;
     private final RedissonClient redissonClient;
-    private final Sinks.Many<StockDto> stockEventSink;
     private final StockService stockService;
 
-    @KafkaListener(topics = {"success-validate-seller-id-from-set-sales-time"}, groupId = "product-service")
+    @KafkaListener(topics = {"success-validate-seller-id-from-set-sales-time"})
     public void setSalesTime(Message<?> message) {
 
         SetProductSalesStartTimeDto setProductSalesStartTimeDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
@@ -53,19 +52,9 @@ public class StockEventConsumer {
 
     }
 
-    @KafkaListener(topics = {"stream-stock"}, groupId = "product-service")
-    public void listenStockUpdate(Message<?> message) {
-        List<StockDto> stockDtos = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
-        });
-        for (StockDto stockDto : stockDtos) {
-            stockEventSink.tryEmitNext(stockDto);
-        }
-
-    }
-
     // 재고 수정, 레디스에 반영
     @Transactional
-    @KafkaListener(topics = {"stock-update"}, groupId = "product-service")
+    @KafkaListener(topics = {"stock-update"})
     public void updateStock(UpdateStockDto updateStockDto) {
         RLock lock = redissonClient.getLock("stock-lock");
         try {
@@ -85,7 +74,7 @@ public class StockEventConsumer {
 
     // 주문 요청 이벤트 받아서 재고 있는지 확인
     @Transactional
-    @KafkaListener(topics = {"create-orders"}, groupId = "product-service")
+    @KafkaListener(topics = {"create-orders"})
     public void checkStock(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         RLock lock = redissonClient.getLock("stock-lock");
@@ -121,7 +110,7 @@ public class StockEventConsumer {
 
     // 선착순 구매 재고 확인
     @Transactional
-    @KafkaListener(topics = {"create-first-come-orders"}, groupId = "product-service")
+    @KafkaListener(topics = {"create-first-come-orders"})
     public void checkStockAndStartTime(Message<?> message) {
         CreateFirstComeOrdersEventDto createFirstComeOrdersEventDto = null;
         RLock lock = redissonClient.getLock("stock-lock");
@@ -151,7 +140,7 @@ public class StockEventConsumer {
 
     // 재고 차감
     @Transactional
-    @KafkaListener(topics = {"success-create-orders-product"}, groupId = "product-service")
+    @KafkaListener(topics = {"success-create-orders-product"})
     public void reduceStock(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         RLock lock = redissonClient.getLock("stock-lock");
@@ -212,7 +201,7 @@ public class StockEventConsumer {
 
     // 주문 제품 상태 반품 완료 이벤트 받아서 재고 늘리기
     @Transactional
-    @KafkaListener(topics = {"return-completed-ordersProduct"}, groupId = "product-service")
+    @KafkaListener(topics = {"return-completed-ordersProduct"})
     public void increaseStockForReturnedProducts(Message<?> message) {
         UpdateOrdersProductStatusDto updateOrdersProductStatusDto = null;
         RLock lock = redissonClient.getLock("stock-lock");

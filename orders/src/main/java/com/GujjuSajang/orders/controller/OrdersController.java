@@ -23,7 +23,7 @@ public class OrdersController {
 
     // 주문 요청
     @PostMapping
-    public ResponseEntity<?> createOrder(HttpServletRequest request, @RequestBody CartDto cartDto) {
+    public ResponseEntity<String> createOrder(HttpServletRequest request, @RequestBody CartDto cartDto) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         ordersEventProducer.createOrder(tokenMemberInfo.getId(), cartDto);
         return ResponseEntity.ok().body("주문 요청");
@@ -39,7 +39,7 @@ public class OrdersController {
 
     // 선착순 주문
     @PostMapping("/firstcome")
-    public ResponseEntity<?> firstComeOrders(HttpServletRequest request, @RequestBody CartProductsDto cartProductsDto) {
+    public ResponseEntity<String> firstComeOrders(HttpServletRequest request, @RequestBody CartProductsDto cartProductsDto) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         ordersEventProducer.createFirstComeOrders(tokenMemberInfo.getId(), cartProductsDto);
         return ResponseEntity.ok().body("선착순 주문 요청");

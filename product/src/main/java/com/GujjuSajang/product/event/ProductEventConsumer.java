@@ -22,7 +22,7 @@ public class ProductEventConsumer {
     private final ObjectMapper objectMapper;
     private final ProductRepository productRepository;
 
-    @KafkaListener(topics = {"request-set-product-sales-time"}, groupId = "product-service")
+    @KafkaListener(topics = {"request-set-product-sales-time"})
     public void validateSellerId(Message<?> message) {
         SetProductSalesStartTimeDto setProductSalesStartTimeDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
         });
