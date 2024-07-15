@@ -18,7 +18,7 @@ public class MailEventConsumer {
     private final EventProducer eventProducer;
 
     @Transactional
-    @KafkaListener(topics = {"create-member"}, groupId = "mail-service")
+    @KafkaListener(topics = {"create-member"})
     public void sendMail(CreateMemberEventDto createMemberEventDto) {
         try {
             mailSender.sendVerifiedMail(createMemberEventDto.getId(), createMemberEventDto.getMail(), createMemberEventDto.getCode());
@@ -28,7 +28,7 @@ public class MailEventConsumer {
     }
 
     @Transactional
-    @KafkaListener(topics = {"create-member"}, groupId = "member-service")
+    @KafkaListener(topics = {"create-member"})
     public void saveVerifiedMail(CreateMemberEventDto createMemberEventDto) {
         try {
             mailVerifiedRedisRepository.save(createMemberEventDto.getId(), createMemberEventDto.getCode());

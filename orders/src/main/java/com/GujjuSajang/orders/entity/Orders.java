@@ -36,13 +36,4 @@ public class Orders extends BaseTimeEntity {
                 .build();
     }
 
-    public void failOrdersFromReduceStock() {
-        this.status = OrdersStatus.NOT_ENOUGH_STOCK;
-    }
-
-    public void failOrdersFromOrdersProducts() {
-        this.status = OrdersStatus.PROCESSING_ERROR;
-    }
-
-
 }

@@ -16,7 +16,7 @@ public class MemberEventConsumer {
     private static final Logger logger = LoggerFactory.getLogger(MemberEventConsumer.class);
     private final MemberRepository memberRepository;
 
-    @KafkaListener(topics = {"fail-send-mail", "fail-save-code", "fail-create-cart"}, groupId = "fail-create-member")
+    @KafkaListener(topics = {"fail-send-mail", "fail-save-code", "fail-create-cart"})
     @Transactional
     public void compensationCreateMember(CreateMemberEventDto createMemberEventDto) {
         try {

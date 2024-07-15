@@ -26,8 +26,8 @@ public class PaymentEventConsumer {
     private final PaymentRepository paymentRepository;
     private final Random random = new Random();
 
-    @KafkaListener(topics = {"success-check-stock"}, groupId = "payment-service")
-    public void paymentView(Message<?> message) {
+    @KafkaListener(topics = {"succeed-check-stock"})
+    public void paymentScreen(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
@@ -37,13 +37,14 @@ public class PaymentEventConsumer {
                 throw new RuntimeException("고객 변심 이탈");
             }
 
-            eventProducer.sendEvent("paying", createOrderEventDto);
+            eventProducer.sendEvent("request-payment", createOrderEventDto);
         } catch (Exception e) {
-            eventProducer.sendEvent("fail-payment", createOrderEventDto);
+            log.error("failed to request payment");
+            eventProducer.sendEvent("failed-request-payment", createOrderEventDto);
         }
     }
 
-    @KafkaListener(topics = {"paying"}, groupId = "payment-service")
+    @KafkaListener(topics = {"request-payment"})
     public void createPayment(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
@@ -61,36 +62,18 @@ public class PaymentEventConsumer {
                     .status(PaymentStatus.COMPLETED)
                     .amount(amount)
                     .build());
+
             createOrderEventDto.setPaymentId(payment.getId());
+
             eventProducer.sendEvent("success-payment", createOrderEventDto);
         } catch (Exception e) {
-            eventProducer.sendEvent("fail-payment", createOrderEventDto);
-        }
-    }
-
-    @KafkaListener(topics = {"fail-payment"}, groupId = "payment-service")
-    public void failedPayment(Message<?> message) {
-        CreateOrderEventDto createOrderEventDto = null;
-        try {
-            createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
-            });
-
-            int amount = createOrderEventDto.getCartProductsDtos().stream().mapToInt(cartProductsDto -> cartProductsDto.getPrice() * cartProductsDto.getCount()).sum();
-
-            Payment payment = paymentRepository.save(Payment.builder()
-                    .memberId(createOrderEventDto.getMemberId())
-                    .status(PaymentStatus.CANCEL)
-                    .amount(amount)
-                    .build());
-            createOrderEventDto.setPaymentId(payment.getId());
+            log.error("failed to payment");
             eventProducer.sendEvent("failed-payment", createOrderEventDto);
-        } catch (Exception e) {
-            log.error("fail-payment", e);
         }
     }
 
-    // 결제 취소 처리
-    @KafkaListener(topics = {"fail-create-orders-product", "fail-create-orders", "fail-reduce-stock"}, groupId = "payment-service")
+    // 결제 성공 이후 취소 처리
+    @KafkaListener(topics = {"failed-create-orders", "failed-create-orders-product", "failed-deduct-stock"})
     public void cancelPayment(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
@@ -101,11 +84,11 @@ public class PaymentEventConsumer {
             payment.cancelPayment();
             paymentRepository.save(payment);
 
+            eventProducer.sendEvent("cancel-payment", createOrderEventDto);
+
         } catch (Exception e) {
             log.error("error create failed payment event message : {}", createOrderEventDto, e);
         }
     }
-
-
 
 }

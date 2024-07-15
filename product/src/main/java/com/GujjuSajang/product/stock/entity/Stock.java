@@ -2,7 +2,10 @@ package com.GujjuSajang.product.stock.entity;
 
 import com.GujjuSajang.product.entity.BaseTimeEntity;
 import com.GujjuSajang.product.stock.dto.StockDto;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,7 +28,7 @@ public class Stock extends BaseTimeEntity {
     private LocalDateTime startTime;
 
     public void updateCount(int count) {
-        this.count += count;
+        this.count = this.count - count;
     }
 
     public static Stock from(StockDto stockDto) {

@@ -25,10 +25,9 @@ public class OrdersEventConsumer {
     private final ObjectMapper objectMapper;
     private final EventProducer eventProducer;
 
-
     // 결제 성공 이벤트 받아서 주문 생성
-    @KafkaListener(topics = {"success-payment"}, groupId = "orders-service")
-    public void successOrders(Message<?> message) {
+    @KafkaListener(topics = {"success-payment"})
+    public void createOrders(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
 
@@ -36,64 +35,25 @@ public class OrdersEventConsumer {
             });
             Orders orders = ordersRepository.save(Orders.of(createOrderEventDto, OrdersStatus.COMPLETE));
             createOrderEventDto.setOrderId(orders.getId());
-            ordersRepository.save(orders);
-            eventProducer.sendEvent("success-create-orders", createOrderEventDto);
+            eventProducer.sendEvent("created-orders", createOrderEventDto);
 
         } catch (Exception e) {
             log.error("Failed to update order status with ID: {}. Exception: ", Objects.requireNonNull(createOrderEventDto).getOrderId(), e);
-            eventProducer.sendEvent("fail-create-orders", createOrderEventDto);
+            eventProducer.sendEvent("failed-create-orders", createOrderEventDto);
         }
     }
 
-    // 결제 실패 이벤트 받아서 주문 실패 처리
-    @KafkaListener(topics = {"failed-payment"}, groupId = "orders-service")
-    public void failOrdersFromFailedPayment(Message<?> message) {
-        CreateOrderEventDto createOrderEventDto = null;
-        try {
-            createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
-            });
-            Orders orders = ordersRepository.save(Orders.of(createOrderEventDto, OrdersStatus.FAILED_PAYMENT));
-            createOrderEventDto.setOrderId(orders.getId());
-            ordersRepository.save(orders);
-            eventProducer.sendEvent("create-orders-from-failed-payment", createOrderEventDto);
-
-        } catch (Exception e) {
-            log.error("fail orders from fail payment message: {}. Exception:", createOrderEventDto, e);
-        }
-    }
-
-    // 재고 처리 실패 이벤트 받아서 주문 실패 처리
-    @KafkaListener(topics = {"fail-reduce-stock"}, groupId = "orders-service")
-    public void failOrdersFromFailedReduceStock(Message<?> message) {
-        CreateOrderEventDto createOrderEventDto = null;
-        try {
-            createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
-            });
-            Orders orders = ordersRepository.findById(createOrderEventDto.getOrderId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
-            orders.failOrdersFromReduceStock();
-            ordersRepository.save(orders);
-        } catch (Exception e) {
-            log.error("fail orders from fail reduce stock message: {}. Exception:", createOrderEventDto, e);
-        }
-    }
-
-    // 제품 상세 생성 실패 이벤트 받아서 주문 실패 처리
-    @KafkaListener(topics = {"fail-create-orders-product"}, groupId = "orders-service")
+    // 주문 실패 처리
+    @KafkaListener(topics = {"failed-create-orders-product", "failed-deduct-stock"})
     public void failOrdersFromFailedOrdersProducts(Message<?> message) {
         CreateOrderEventDto createOrderEventDto = null;
         try {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
-            Orders orders = getOrders(createOrderEventDto);
-            orders.failOrdersFromOrdersProducts();
-            ordersRepository.save(orders);
+            ordersRepository.setStatus(createOrderEventDto.getOrderId(), OrdersStatus.PROCESSING_ERROR);
         } catch (Exception e) {
             log.error("error change order status from fail orders products message: {}. Exception:", createOrderEventDto, e);
         }
-    }
-
-    private Orders getOrders(CreateOrderEventDto createOrderEventDto) {
-        return ordersRepository.findById(createOrderEventDto.getOrderId()).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
     }
 
 }

@@ -17,7 +17,7 @@ public class OrdersEventProducer {
     public void createOrder(Long memberId, CartDto cartDto) {
 
         eventProducer.sendEvent(
-                "create-orders",
+                "request-orders",
                 CreateOrderEventDto.builder()
                         .memberId(memberId)
                         .cartProductsDtos(cartDto.getCartProductsDtos())

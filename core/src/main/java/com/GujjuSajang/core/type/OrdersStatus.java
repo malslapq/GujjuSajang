@@ -9,7 +9,6 @@ public enum OrdersStatus {
 
     PAYMENT_PENDING("결제 대기"),
     PROCESSING_ERROR("주문 실패(서버 오류)"),
-    NOT_ENOUGH_STOCK("주문 실패(재고 부족)"),
     FAILED_PAYMENT("결제 실패"),
     COMPLETE("주문 완료");
 

@@ -25,7 +25,7 @@ public class StockRedisRepository {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final int TTL_MIN = 10;
     private static final String SAVE_ALL_SCRIPT =
-            "local ttl_min = 5 " +
+            "local ttl_min = 10 " +
                     "for i = 1, #KEYS do " +
                     "redis.call('SET', KEYS[i], ARGV[i]) " +
                     "redis.call('EXPIRE', KEYS[i], ttl_min * 60) " +
