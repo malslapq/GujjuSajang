@@ -1,4 +1,4 @@
-package com.GujjuSajang.product.config;
+package com.GujjuSajang.webflux.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -18,8 +18,8 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("product")
-                .pathsToMatch("/product/**")
+                .group("webflux")
+                .pathsToMatch("/stream/**")
                 .build();
     }
 
@@ -30,9 +30,8 @@ public class SwaggerConfig {
                 .components(new io.swagger.v3.oas.models.Components().addSecuritySchemes("Bearer",
                         new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer"))
-                .info(new Info().title("제품 API")
+                .info(new Info().title("실시간 재고 확인 API")
                         .version("0.0.1")
-                        .description("제품 서비스 관련 API"));
+                        .description("실시간 서비스 관련 API"));
     }
-
 }

@@ -45,6 +45,7 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.2.0'
 }
 
 dependencyManagement {

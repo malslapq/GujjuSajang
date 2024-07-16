@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -24,6 +25,11 @@ import java.util.List;
 public class JwtFilter implements WebFilter {
 
     public static final String LOGOUT_PATH = "/logout";
+    public static final String SWAGGER_PATH = "/swagger-ui.html";
+    public static final String WEBJARS_PATH = "/webjars/**";
+    public static final String SWAGGER_API_DOCS_PATH = "/v3/api-docs/**";
+    public static final String GENERIC_SWAGGER_API_DOCS_PATH = "/**/v3/api-docs/**";
+    public static final String RESOURCE_PATH = "/favicon.ico";
     public static final String TOKEN_PATH = "/refresh";
     public static final String LOGIN_PATH = "/member/login";
     public static final String SIGNUP_PATH = "/member/signup";
@@ -31,6 +37,7 @@ public class JwtFilter implements WebFilter {
     private static final String BEARER_PREFIX = "Bearer ";
     private final AuthService authService;
     private final ObjectMapper objectMapper;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
 
     private static final List<String> EXCLUDED_PATHS = List.of(
@@ -38,7 +45,12 @@ public class JwtFilter implements WebFilter {
             SIGNUP_PATH,
             TOKEN_PATH,
             MAIL_VERIFIED_PATH,
-            LOGOUT_PATH
+            LOGOUT_PATH,
+            SWAGGER_PATH,
+            RESOURCE_PATH,
+            WEBJARS_PATH,
+            SWAGGER_API_DOCS_PATH,
+            GENERIC_SWAGGER_API_DOCS_PATH
     );
 
     // dodilter와 같은 부분 근데 Mono는 비동기 처리임
@@ -46,7 +58,6 @@ public class JwtFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // 로그인시에는 검증 안함
         String requestURI = exchange.getRequest().getPath().toString();
-        System.out.println(requestURI);
         if (isExcludedPath(requestURI)) {
             return chain.filter(exchange);
         }
@@ -100,7 +111,7 @@ public class JwtFilter implements WebFilter {
 
     // 헤더 검증 필요 없는지 체크
     private boolean isExcludedPath(String path) {
-        return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
+        return EXCLUDED_PATHS.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
 }

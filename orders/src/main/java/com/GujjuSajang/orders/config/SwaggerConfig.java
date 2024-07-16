@@ -1,4 +1,4 @@
-package com.GujjuSajang.product.config;
+package com.GujjuSajang.orders.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -18,8 +18,8 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("product")
-                .pathsToMatch("/product/**")
+                .group("orders")
+                .pathsToMatch("/orders/**")
                 .build();
     }
 
@@ -30,9 +30,9 @@ public class SwaggerConfig {
                 .components(new io.swagger.v3.oas.models.Components().addSecuritySchemes("Bearer",
                         new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer"))
-                .info(new Info().title("제품 API")
+                .info(new Info().title("주문 API")
                         .version("0.0.1")
-                        .description("제품 서비스 관련 API"));
+                        .description("주문 서비스 관련 API"));
     }
 
 }
