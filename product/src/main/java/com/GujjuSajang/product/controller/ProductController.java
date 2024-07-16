@@ -8,17 +8,17 @@ import com.GujjuSajang.product.dto.ProductPageDto;
 import com.GujjuSajang.product.service.ProductService;
 import com.GujjuSajang.product.stock.dto.StockDto;
 import com.GujjuSajang.product.stock.service.StockService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
-import java.time.Duration;
-
+@Tag(name = "제품 서비스 API", description = "제품 관련 API")
 @RestController
 @RequiredArgsConstructor
 public class ProductController {
@@ -26,29 +26,32 @@ public class ProductController {
     private final ProductService productService;
     private final StockService stockService;
 
-    // 제품 등록
+    @Operation(summary = "제품 등록", description = "판매자가 제품을 등록합니다.")
     @PostMapping
-    public ResponseEntity<CreateProductDto.Response> createProduct(@RequestBody CreateProductDto.Request productDetailDtoRequest, HttpServletRequest request) {
+    public ResponseEntity<CreateProductDto.Response> createProduct(@RequestBody CreateProductDto.Request productDetailDtoRequest,
+                                                                   HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         return ResponseEntity.ok(productService.createProduct(tokenMemberInfo, productDetailDtoRequest));
     }
 
-    // 제품 상세 조회
+    @Operation(summary = "제품 상세 조회", description = "제품의 상세 정보를 조회합니다.")
     @GetMapping("/{product-id}")
-    public ResponseEntity<ProductDetailDtoResponse> getProduct(@PathVariable("product-id") Long productId) {
+    public ResponseEntity<ProductDetailDtoResponse> getProduct(@Parameter(description = "조회할 제품의 ID") @PathVariable("product-id") Long productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
-    // 제품 검색
+    @Operation(summary = "제품 검색", description = "키워드를 통해 제품을 검색합니다.")
     @GetMapping("/list")
-    public ResponseEntity<ProductPageDto> getProducts(@RequestParam int page, @RequestParam int size, @RequestParam String keyword) {
+    public ResponseEntity<ProductPageDto> getProducts(@Parameter(description = "페이지 번호") @RequestParam int page,
+                                                      @Parameter(description = "페이지 크기") @RequestParam int size,
+                                                      @Parameter(description = "검색 키워드") @RequestParam String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(productService.getProducts(pageable, keyword));
     }
 
-    // 제품 재고 조회
+    @Operation(summary = "제품 재고 조회", description = "제품의 재고 정보를 조회합니다.")
     @GetMapping("/{product-id}/stock")
-    public ResponseEntity<StockDto> getStock(@PathVariable("product-id") Long productId) {
+    public ResponseEntity<StockDto> getStock(@Parameter(description = "조회할 제품의 ID") @PathVariable("product-id") Long productId) {
         return ResponseEntity.ok().body(stockService.getStock(productId));
     }
 

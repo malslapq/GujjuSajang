@@ -12,7 +12,6 @@ public class CreateProductDto {
     @Builder
     public static class Request {
 
-        private Long id;
         private String name;
         private int price;
         private String description;
