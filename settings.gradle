@@ -1,1 +1,8 @@
-rootProject.name = 'PyumPyum'
+rootProject.name = 'GujjuSajang'
+
+include 'core'
+include 'cart'
+include 'product'
+include 'member'
+include 'orders'
+include 'payment'

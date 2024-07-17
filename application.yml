@@ -1,0 +1,3 @@
+spring:
+  profiles:
+    active: core,auth,cart,member,orders,product,redis

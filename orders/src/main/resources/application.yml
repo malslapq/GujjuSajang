@@ -1,0 +1,3 @@
+spring:
+  profiles:
+    include: orders, db, eureka-client, redis

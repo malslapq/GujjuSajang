@@ -1,0 +1,3 @@
+spring:
+  profiles:
+    include: gateway, redis, eureka-client

@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(':core')
+    implementation group: 'org.redisson', name: 'redisson', version: '3.31.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1'
+}
