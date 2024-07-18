@@ -34,7 +34,7 @@ public class ProductController {
                     @ApiResponse(responseCode = "200", description = "제품 등록 성공",
                             content = @Content(mediaType = "application/json"))
             })
-    @PostMapping
+    @PostMapping("/product")
     public ResponseEntity<CreateProductDto.Response> createProduct(
             @RequestBody CreateProductDto.Request productDetailDtoRequest,
             HttpServletRequest request) {

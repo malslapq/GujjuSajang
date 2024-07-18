@@ -27,8 +27,8 @@ public class Stock extends BaseTimeEntity {
     private int count;
     private LocalDateTime startTime;
 
-    public void updateCount(int count) {
-        this.count = this.count - count;
+    public void deductCount(int count) {
+        this.count = this.count + count;
     }
 
     public static Stock from(StockDto stockDto) {

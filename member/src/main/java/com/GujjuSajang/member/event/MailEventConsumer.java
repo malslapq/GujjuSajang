@@ -18,7 +18,7 @@ public class MailEventConsumer {
     private final EventProducer eventProducer;
 
     @Transactional
-    @KafkaListener(topics = {"create-member"})
+    @KafkaListener(topics = {"create-member"}, groupId = "mail-service")
     public void sendMail(CreateMemberEventDto createMemberEventDto) {
         try {
             mailSender.sendVerifiedMail(createMemberEventDto.getId(), createMemberEventDto.getMail(), createMemberEventDto.getCode());

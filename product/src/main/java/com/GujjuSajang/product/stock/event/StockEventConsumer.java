@@ -60,7 +60,7 @@ public class StockEventConsumer {
         try {
             lock.lock(5, TimeUnit.SECONDS);
             Stock stock = stockRepository.findByProductId(updateStockDto.getProductId()).orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND_PRODUCT));
-            stock.updateCount(updateStockDto.getCount());
+            stock.deductCount(updateStockDto.getCount());
             stockRepository.save(stock);
             stockRedisRepository.save(StockDto.from(stock));
         } catch (Exception e) {
@@ -227,7 +227,7 @@ public class StockEventConsumer {
 
             List<Stock> stocks = getAllStocksFromProductIds(updateOrdersProductStatusDto.getProductIds());
             for (Stock stock : stocks) {
-                stock.updateCount(ordersProductCountsMap.get(stock.getProductId()));
+                stock.deductCount(ordersProductCountsMap.get(stock.getProductId()));
             }
             List<StockDto> stockDtos = stocks.stream().map(StockDto::from).toList();
 

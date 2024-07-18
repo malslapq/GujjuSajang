@@ -33,7 +33,7 @@ public class OrdersController {
                     @ApiResponse(responseCode = "200", description = "주문 요청 성공",
                             content = @Content(mediaType = "application/json"))
             })
-    @PostMapping
+    @PostMapping("/orders")
     public ResponseEntity<String> createOrder(HttpServletRequest request, @RequestBody CartDto cartDto) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         ordersEventProducer.createOrder(tokenMemberInfo.getId(), cartDto);
@@ -46,7 +46,7 @@ public class OrdersController {
                     @ApiResponse(responseCode = "200", description = "주문 조회 성공",
                             content = @Content(mediaType = "application/json"))
             })
-    @GetMapping
+    @GetMapping("/orders")
     public ResponseEntity<OrdersPageDto> getOrder(@RequestParam int page, @RequestParam int size, HttpServletRequest request) {
         Pageable pageable = PageRequest.of(page, size);
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);

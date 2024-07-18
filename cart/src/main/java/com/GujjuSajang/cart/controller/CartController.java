@@ -41,7 +41,7 @@ public class CartController {
                     @ApiResponse(responseCode = "200", description = "장바구니 조회 성공",
                             content = @Content(mediaType = "application/json"))
             })
-    @GetMapping
+    @GetMapping("/cart")
     public ResponseEntity<CartDto> getCart(HttpServletRequest request) {
         TokenMemberInfo tokenMemberInfo = RequestHeaderUtil.parseTokenMemberInfo(request);
         return ResponseEntity.ok(cartService.getCart(tokenMemberInfo.getId()));

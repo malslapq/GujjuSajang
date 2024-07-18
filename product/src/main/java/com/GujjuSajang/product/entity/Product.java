@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Builder
-@Table(name = "product", indexes = {
-        @Index(name = "idx_product_name", columnList = "name")
-})
 public class Product extends BaseTimeEntity {
 
     @Id
