@@ -1,6 +1,7 @@
 <h2> 목차 </h2>
 
 - [기술 스택](#기술-스택)
+- [ERD](#ERD)
 - [API 명세](#api-명세)
 - [주요 기능](#주요-기능)
 - [아키텍처](#아키텍처)
@@ -11,18 +12,26 @@
 
 <h3> 프로젝트 소개  </h3>
 
-- 사용자가 다양한 굿즈를 한 곳에서 검색하고 구매할 수 있고 한정판 굿즈를 선착순으로 구매할 수 있는 서비스를 제공하는 굿즈 이커머스 프로젝트입니다.
+- 사용자가 다양한 굿즈를 한 곳에서 검색 구입이 가능하며 한정판 굿즈를 선착순으로 구매할 수 있고 누구든 판매자 등록을 통해 자신이 제작한 굿즈를 판매할 수 있는 서비스를 제공하는 굿즈 이커머스 프로젝트입니다.
 
 
 <h3 id="기술-스택"> 기술 스택 </h3>
 <div>
-    <img src="https://img.shields.io/badge/Spring Boot -6DB33F?style=for-the-badge&logo=SpringBoot&logoColor=white">
-    <img src="https://img.shields.io/badge/mysql -4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white">
-    <img src="https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white">
-    <img src="https://img.shields.io/badge/JPA-59666C?style=for-the-badge&logo=Hibernate&logoColor=white">
-    <img src="https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka">
-    <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">
+    <img src="https://img.shields.io/badge/java 17-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white">
+    <img src="https://img.shields.io/badge/Spring Boot 3.3.1 -6DB33F?style=for-the-badge&logo=SpringBoot&logoColor=white">
+    <img src="https://img.shields.io/badge/spring Data jpa-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white">
+    <img src="https://img.shields.io/badge/Apache %20Kafka cp7.3.0-000?style=for-the-badge&logo=apachekafka">
+    <img src="https://img.shields.io/badge/mysql 8.0 -4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white">
+    <img src="https://img.shields.io/badge/redis 7.2.4-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white">
+    <img src="https://img.shields.io/badge/docker 26.1.1-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">
+    <img src="https://img.shields.io/badge/Gradle 8.8-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white">
+    
 </div>
+
+<h3 id="ERD"> ERD </h3>
+
+<img alt="ERD" src="ERD.png"/>
+
 
 <h3 id="api-명세"> API 명세 </h3>
 
@@ -33,19 +42,27 @@
 <details>
     <summary>장바구니</summary>
     <img alt="장바구니 시퀀스 다이어그램" src="장바구니 시퀀스 다이어그램.png"/>
+
+- 사용자가 원하는 제품을 장바구니에 담거나, 담은 물건을 수정 및 삭제할 수 있으며, 변경된 날로부터 7일 동안 유지됩니다.
+
 </details>
 
 <details> 
     <summary> 선착순 구매 </summary> 
     <img alt="주문 시퀀스 다이어그램" src="주문 시퀀스 다이어그램.png"/>
+
+- 특정 시간부터 주문할 수 있도록 구현했으며 이벤트 기반으로 진행되고 실패 시 보상 트랜잭션을 통해 자동으로 재고를 복구합니다.
+
 </details>
 
 <details> 
     <summary> 실시간 재고 확인 </summary>
     <img alt="실시간 재고 확인 시퀀스 다이어그램" src="실시간 재고 확인 시퀀스 다이어그램.png"/>
+
+-  제품 ID를 통해 서버와 SSE 통신을 설정해 사용자가 실시간으로 재고 상태를 모니터링할 수 있는 기능입니다.
+
 </details>
 
----
 
 <h3 id="아키텍처"> 아키텍처 </h3>
 
@@ -55,27 +72,19 @@
 
 <h3 id="기술적-의사-결정"> 기술적 의사 결정 </h3>
 
-<details> 
-    <summary> Event Driven 선택 </summary>
+Message Driven과 Event Driven
 
-- Message Driven
-    - 동기식 통신 : 다른 서비스에 요청을 보낸 뒤 응답이 올 때까지 기다려야 하므로 전체적인 응답 시간이 길어길 수 있음
-    - 강한 결합 : 다른 서비스에 요청과 응답을 통해 서비스 로직이 실행되므로 서비스들간 강한 결합이 생기고 그로 인해 유지 보수성이 떨어지고 확장에 열려있지 않음
-
-- Event Driven
-    - 약한 결합 : 각 서비스는 이벤트 Pub/Sub을 통해 서비스 로직을 실행하므로 결합도를 낮을 수 있어 높은 확장성과 유지보수성을 가질 수 있음
-    - 비동기식 통신 : 이벤트를 통해 비동기적으로 여러 작업들을 동시에 처리할 수 있기 때문에 전체적인 응답이 빨라짐
-    - 시스템 탄력성 : 각 서비스들이 독립된 로직에서 실행되기 때문에 한 서비스 로직이 실패하더라도 다른 서비스들은 문제없이 실행되며 실패한 로직은 사후 로직들을 통해 복구하거나 따로 처리할 수 있기에 전체적인 시스템 탄력성을 향상시킬 수 있음
-
-**결론 : 이커머스 프로젝트는 사용자에게 반응해야 하고 높은 확장성과 유연성이 필요하기 때문에 Event Driven이 더 적합하다고 생각했습니다.**
-</details>
+- 이커머스 프로젝트를 진행하며 Event Driven Architecture 를 적용했는데 그 이유로는 
+  - Message Driven은 동기식 통신을 기반으로 하기 때문에 요청에 대한 응답이 오기전까지 대기하고 있어야 하기 때문에 전체적인 응답시간이 길어질 수 있는 반면 Event Driven은 이벤트 기반 비동기 통신을 사용할 수 있기에 여러 작업들을 동시에 처리할 수 있어 전체적 응답 속도를 높일 수 있습니다.
+  - Message Driven은 서비스들간에 강한 결합이 생길 수 있습니다. 강한 결합이 생길 경우 유지 보수성과 확장성이 떨어지게 되는 반면 Event Driven의 경우 이벤트 Pub/Sub을 통해 서비스 로직을 실행하기 때문에 각 서비스 간의 결합도를 낮춰 Message Driven에 비해 높은 확장성과 더 나은 유지 보수성을 가질 수 있습니다.
+- 결론적으로 이커머스 프로젝트는 사용자에게 빠르게 반응해야 하며 높은 확장성과 유연성이 필요한데 이런 요구사항을 충족시키기 위해 Message Driven Architecture보다 Event Driven Architecture가 더 적합하다고 판단하여 선택했습니다.
 
 ---
 
 <h3 id="트러블-슈팅"> 트러블 슈팅 </h3>
 
 <details> 
-    <summary> 동시성 </summary>
+    <summary> 동시성 이슈 </summary>
 
 - 재고 100개를 추가해놨는데 서비스 로직 테스트시 120개가 팔려버리는 상황 발생
 
