@@ -29,7 +29,7 @@
 
 <h3 id="ERD"> ERD </h3>
 
-<img alt="ERD" src="ERD.png"/>
+<img alt="ERD" src="resource/ERD.png"/>
 
 
 <h3 id="api-명세"> API 명세 </h3>
@@ -40,7 +40,7 @@
 
 <details>
     <summary>장바구니</summary>
-    <img alt="장바구니 시퀀스 다이어그램" src="장바구니 시퀀스 다이어그램.png"/>
+    <img alt="장바구니 시퀀스 다이어그램" src="resource/장바구니 시퀀스 다이어그램.png"/>
 
 - 사용자가 원하는 제품을 장바구니에 담거나, 담은 물건을 수정 및 삭제할 수 있으며, 변경된 날로부터 7일 동안 유지됩니다.
 
@@ -48,7 +48,7 @@
 
 <details> 
     <summary> 선착순 구매 </summary> 
-    <img alt="주문 시퀀스 다이어그램" src="주문 시퀀스 다이어그램.png"/>
+    <img alt="주문 시퀀스 다이어그램" src="resource/주문 시퀀스 다이어그램.png"/>
 
 - 특정 시간부터 주문할 수 있도록 구현했으며 이벤트 기반으로 진행되고 실패 시 보상 트랜잭션을 통해 자동으로 재고를 복구합니다.
 
@@ -56,7 +56,7 @@
 
 <details> 
     <summary> 실시간 재고 확인 </summary>
-    <img alt="실시간 재고 확인 시퀀스 다이어그램" src="실시간 재고 확인 시퀀스 다이어그램.png"/>
+    <img alt="실시간 재고 확인 시퀀스 다이어그램" src="resource/실시간 재고 확인 시퀀스 다이어그램.png"/>
 
 - 제품 ID를 통해 서버와 SSE 통신을 설정해 사용자가 실시간으로 재고 상태를 모니터링할 수 있는 기능입니다.
 
@@ -65,7 +65,7 @@
 
 <h3 id="아키텍처"> 아키텍처 </h3>
 
-<img alt="아키텍처" src="아키텍처.png"/>
+<img alt="아키텍처" src="resource/아키텍처.png"/>
 
 ---
 
@@ -80,14 +80,14 @@
 성능 개선 단계 (Jmeter 500개 쓰레드, 10번의 루프 테스트)
 
 - 캐싱 적용 전
-  <img alt="캐싱안함" src="캐싱안함.png"/>
+  <img alt="캐싱안함" src="resource/캐싱안함.png"/>
 - 캐싱 적용, Redis를 사용하여 재고 데이터를 캐싱함으로써 데이터베이스 조회 빈도를 줄임
 - <b> 평균 응답 시간 52.7% 개선 </b>
-  <img alt="캐싱했을 때" src="캐싱했을 때.png"/>
+  <img alt="캐싱했을 때" src="resource/캐싱했을 때.png"/>
 - 캐싱 적용 및 Lua 스크립트를 사용, 원자적처리 및 네트워크 왕복 시간을 줄임
 - <b> 평균 응답 시간 73.2% 개선 </b>
-  <img alt="루아스크립트 적용" src="루아스크립트 적용.png"/>
-  <img alt="성능 개선 그래프" src="성능 개선 그래프.png"/>
+  <img alt="루아스크립트 적용" src="resource/루아스크립트 적용.png"/>
+  <img alt="성능 개선 그래프" src="resource/성능 개선 그래프.png"/>
 
 ---
 
@@ -120,7 +120,7 @@
 
 동시성 이슈
 
-<img alt="동시성 발생" src="동시성 발생.png"/>
+<img alt="동시성 발생" src="resource/동시성 발생.png"/>
 - 재고 100개를 추가해놨는데 서비스 로직 테스트시 120개가 팔린 상황
 
 문제 해결 방법 모색
@@ -137,9 +137,9 @@ Lock을 구현해서 해결해야 했고, 아래의 락들을 간단하게 구�
 - 주키퍼와 레디스를 이용해서 분산 락을 구현할 수 있으나 주키퍼의 경우 학습 곡선이 있다고 판단돼 Redis 구현체인 Redisson의 분산락을 통해 동시성 문제를 해결했습니다.
 
 - jmeter 500개 쓰레드로 한번에 요청한 결과
-  <img alt="동시성 해결 재고 채우기" src="동시성 해결 재고 채우기.png"/>
-  <img alt="동시성 해결 jmeter" src="동시성 해결 jmeter.png"/>
-  <img alt="동시성 해결 재고 결과" src="동시성 해결 재고 결과.png"/>
-  <img alt="동시성 해결 주문" src="동시성 해결 주문.png"/>
+  <img alt="동시성 해결 재고 채우기" src="resource/동시성 해결 재고 채우기.png"/>
+  <img alt="동시성 해결 jmeter" src="resource/동시성 해결 jmeter.png"/>
+  <img alt="동시성 해결 재고 결과" src="resource/동시성 해결 재고 결과.png"/>
+  <img alt="동시성 해결 주문" src="resource/동시성 해결 주문.png"/>
 
 [자세한 내용 보기](https://velog.io/@malslapq/%EB%AC%BC%EA%B1%B4%EC%9D%B4-%EC%97%86%EB%8A%94%EB%8D%B0-%ED%8C%94%EB%A0%A4%EB%B2%84%EB%A0%B8%EB%8B%A4...-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%9D%B4%EC%8A%88)
