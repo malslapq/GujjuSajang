@@ -83,7 +83,7 @@ public class StockEventConsumer {
             });
             List<Long> productIds = createOrderEventDto.getCartProductsDtos().stream().map(CartProductsDto::getProductId).toList();
 
-            lock.lock(15, TimeUnit.SECONDS);
+            lock.lock(5, TimeUnit.SECONDS);
 
             // 캐시된 재고 가져오기
             List<StockDto> cachedStocks = stockRedisRepository.getAllByProductIds(productIds);
@@ -91,8 +91,10 @@ public class StockEventConsumer {
             // 제품들 가져와서 캐시 안된 제품들 dto로 만들어서 캐싱리스트에 넣기
             Set<Long> cacheHitProductIds = cachedStocks.stream().map(StockDto::getProductId).collect(Collectors.toSet());
             List<Long> cacheMissProductIds = productIds.stream().filter(productId -> !cacheHitProductIds.contains(productId)).toList();
-            List<Stock> stocks = stockRepository.findAllByProductIdIn(cacheMissProductIds);
-            cachedStocks.addAll(stocks.stream().map(StockDto::from).toList());
+            if (!cacheMissProductIds.isEmpty()) {
+                List<Stock> stocks = stockRepository.findAllByProductIdIn(cacheMissProductIds);
+                cachedStocks.addAll(stocks.stream().map(StockDto::from).toList());
+            }
 
             // 주문한 수량 map 생성
             Map<Long, Integer> ordersProductCountMap = createOrderEventDto.getCartProductsDtos().stream().collect(Collectors.toMap(CartProductsDto::getProductId, CartProductsDto::getCount));
@@ -133,10 +135,9 @@ public class StockEventConsumer {
             createOrderEventDto = objectMapper.convertValue(message.getPayload(), new TypeReference<>() {
             });
             Map<Long, Integer> ordersProductCountMap = createOrderEventDto.getCartProductsDtos().stream().collect(Collectors.toMap(CartProductsDto::getProductId, CartProductsDto::getCount));
-            lock.lock(15, TimeUnit.SECONDS);
+            lock.lock(5, TimeUnit.SECONDS);
 
             stockCustomRepository.batchDecrementStockCounts(ordersProductCountMap);
-
         } catch (Exception e) {
             log.error("deductStock error message : {}", createOrderEventDto, e);
             eventProducer.sendEvent("failed-deduct-stock", createOrderEventDto);
