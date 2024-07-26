@@ -1,15 +1,11 @@
 package com.GujjuSajang.member.event;
 
 import com.GujjuSajang.core.dto.CreateMemberEventDto;
-import com.GujjuSajang.member.util.EventProducer;
-import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.entity.Member;
-import com.GujjuSajang.member.repository.MemberRepository;
-import com.GujjuSajang.member.util.PasswordEncoder;
+import com.GujjuSajang.member.util.EventProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 
@@ -17,20 +13,14 @@ import java.security.SecureRandom;
 @RequiredArgsConstructor
 public class MemberEventProducer {
 
-    private final PasswordEncoder passwordEncoder;
     private final EventProducer eventProducer;
-    private final MemberRepository memberRepository;
     @Value("${spring.mail.randomCode}")
     private String CHARACTERS;
     @Value("${spring.mail.codeLength}")
     private int codeLength;
 
-    // 회원 가입
-    @Transactional
-    public MemberSignUpDto.Response signUp(MemberSignUpDto.Request memberSignUpDto) {
-
-        String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
-        Member member = memberRepository.save(Member.of(memberSignUpDto, encodedPassword));
+    // 회원 생성 이벤트 발행
+    public void createMember(Member member) {
 
         eventProducer.sendEvent("create-member",
                 CreateMemberEventDto.builder()
@@ -40,7 +30,6 @@ public class MemberEventProducer {
                         .build()
         );
 
-        return MemberSignUpDto.Response.from(member);
     }
 
     private String getVerifiedCode(int codeLength) {

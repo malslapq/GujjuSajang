@@ -9,6 +9,7 @@ public class MemberLoginDto {
     @NoArgsConstructor
     @Getter
     @Setter
+    @Builder
     public static class Request {
         private String mail;
         private String password;

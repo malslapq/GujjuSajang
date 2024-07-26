@@ -6,7 +6,6 @@ import com.GujjuSajang.member.dto.MemberDetailDto;
 import com.GujjuSajang.member.dto.MemberLoginDto;
 import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
-import com.GujjuSajang.member.event.MemberEventProducer;
 import com.GujjuSajang.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
-    private final MemberEventProducer memberEventProducer;
 
     @Operation(summary = "회원가입",
             description = "새로운 회원을 등록합니다.",
@@ -34,7 +32,7 @@ public class MemberController {
     @PostMapping("/signup")
     public ResponseEntity<MemberSignUpDto.Response> signUp(
             @RequestBody @Valid MemberSignUpDto.Request memberSignUpDto) {
-        return ResponseEntity.ok().body(memberEventProducer.signUp(memberSignUpDto));
+        return ResponseEntity.ok().body(memberService.signUp(memberSignUpDto));
     }
 
     @Operation(summary = "로그인",

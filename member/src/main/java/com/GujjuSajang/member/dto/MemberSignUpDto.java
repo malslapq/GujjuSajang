@@ -9,6 +9,9 @@ public class MemberSignUpDto {
 
     @Getter
     @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Request {
         @NotBlank
         private String name;

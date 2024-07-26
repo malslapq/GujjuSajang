@@ -2,14 +2,17 @@ package com.GujjuSajang.member.service;
 
 import com.GujjuSajang.core.exception.ErrorCode;
 import com.GujjuSajang.core.exception.MemberException;
-import com.GujjuSajang.member.dto.MemberLoginDto;
 import com.GujjuSajang.member.dto.MemberDetailDto;
+import com.GujjuSajang.member.dto.MemberLoginDto;
+import com.GujjuSajang.member.dto.MemberSignUpDto;
 import com.GujjuSajang.member.dto.MemberUpdatePasswordDto;
 import com.GujjuSajang.member.entity.Member;
+import com.GujjuSajang.member.event.MemberEventProducer;
 import com.GujjuSajang.member.repository.MailVerifiedRedisRepository;
 import com.GujjuSajang.member.repository.MemberRepository;
 import com.GujjuSajang.member.util.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,24 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailVerifiedRedisRepository mailVerifiedRedisRepository;
+    private final MemberEventProducer memberEventProducer;
+
+    // 회원 가입
+    @Transactional
+    public MemberSignUpDto.Response signUp(MemberSignUpDto.Request memberSignUpDto) {
+
+        String encodedPassword = passwordEncoder.encode(memberSignUpDto.getPassword());
+        Member member;
+        try {
+            member = memberRepository.save(Member.of(memberSignUpDto, encodedPassword));
+        } catch (DataIntegrityViolationException e) {
+            throw new MemberException(ErrorCode.ALREADY_MAIL, e);
+        }
+
+        memberEventProducer.createMember(member);
+
+        return MemberSignUpDto.Response.from(member);
+    }
 
     // 로그인
     public MemberLoginDto.Response login(MemberLoginDto.Request memberLoginDto) {
