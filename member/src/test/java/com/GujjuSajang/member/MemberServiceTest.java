@@ -12,7 +12,6 @@ import com.GujjuSajang.member.event.MemberEventProducer;
 import com.GujjuSajang.member.repository.MailVerifiedRedisRepository;
 import com.GujjuSajang.member.repository.MemberRepository;
 import com.GujjuSajang.member.service.MemberService;
-import com.GujjuSajang.member.util.MailSender;
 import com.GujjuSajang.member.util.PasswordEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
