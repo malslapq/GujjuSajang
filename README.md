@@ -13,9 +13,8 @@
 
 <h3> 프로젝트 소개  </h3>
 
-<div style="text-align: center;">
-  <img alt="로고" src="resource/로고.png" width="512" height="245"/>
-</div>
+
+<img alt="로고" src="resource/로고.png" width=100%>
 
 - 사용자가 다양한 굿즈를 한 곳에서 검색 구입이 가능하며 한정판 굿즈를 선착순으로 구매할 수 있고 누구든 판매자 등록을 통해 자신이 제작한 굿즈를 판매할 수 있는 서비스를 제공하는 굿즈 이커머스 프로젝트입니다.
 
