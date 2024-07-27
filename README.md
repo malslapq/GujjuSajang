@@ -123,7 +123,9 @@
 
 동시성 이슈
 
-<img alt="동시성 발생" src="resource/동시성 발생.png"/>
+<div style="text-align: center;">
+    <img alt="동시성 발생" src="resource/동시성 발생.png"/>
+</div>
 
 - 서비스 로직 테스트 시 100개의 재고보다 과도하게 판매되는 상황 발생
 
