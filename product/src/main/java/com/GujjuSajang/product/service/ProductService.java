@@ -36,11 +36,11 @@ public class ProductService {
 
     // 제품 등록
     @Transactional
-    public CreateProductDto.Response createProduct(TokenMemberInfo tokenMemberInfo, CreateProductDto.Request productDetailDtoRequest) {
+    public CreateProductDto.Response createProduct(TokenMemberInfo tokenMemberInfo, CreateProductDto.Request createProductRequest) {
 
         memberRoleCheck(tokenMemberInfo.getRole());
 
-        Product product = productRepository.save(Product.of(productDetailDtoRequest, tokenMemberInfo.getId()));
+        Product product = productRepository.save(Product.of(createProductRequest, tokenMemberInfo.getId()));
 
         stockRepository.save(Stock.builder()
                 .productId(product.getId())
