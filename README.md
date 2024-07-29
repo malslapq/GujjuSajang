@@ -30,9 +30,12 @@
     <img src="https://img.shields.io/badge/Gradle 8.8-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white">
 </div>
 
-<h3 id="ERD"> ERD </h3>
-
-<img alt="ERD" src="resource/ERD.png"/>
+<h3>
+<details>
+    <summary>ERD</summary>
+    <img alt="ERD" src="resource/ERD.png"/>
+</details>
+</h3>
 
 
 <h3 id="api-명세"> API 명세 </h3>
@@ -77,8 +80,7 @@
 <b> 재고 관리 </b>
 
 초기 상태에서는 모든 재고 조회 및 갱신 작업이 데이터베이스에 직접 접근하는 방식으로 이루어졌습니다. 
-이로 인해 많은 부하가 발생하고 응답 시간이 길어져 개선이 필요하다고 느꼈고 
-성능을 최적화하기 위해 캐싱과 Lua 스크립트를 사용하여 재고 처리를 개선했습니다.
+이로 인해 많은 부하가 발생하고 응답 시간이 길어져 개선이 필요하다고 느꼈고 성능을 최적화하기 위해 캐싱과 Lua 스크립트를 사용하여 재고 처리를 개선했습니다.
 
 성능 개선 단계 (Jmeter 500개 쓰레드, 10번의 루프 테스트)
 
@@ -108,7 +110,7 @@
 
 <b> 재고 캐싱 </b>
 
-- 성능 개선을 위해 재고를 캐싱하는 방법을 선택했고, 캐시를 적용하기 전에 제일 중요하게 생각한 것은 캐시 데이터와 DB 데이터에 대한 정합성과 일관성을 맞춰주는 것이라고 생각함   
+- 성능 개선을 위해 재고를 캐싱하는 방법을 선택했고, 캐시를 적용하기 전에 제일 중요하게 생각한 것은 캐시 데이터와 DB 데이터에 대한 정합성과 일관성을 맞춰주는 것   
 - 조회
   1. DB에서 데이터를 미리 캐싱
   2. 캐시 데이터가 없으면 DB에서 읽어오고 캐싱하고 응답
@@ -122,29 +124,4 @@
 
 <h3 id="트러블-슈팅"> 트러블 슈팅 </h3>
 
-동시성 이슈
-
-<img alt="동시성 발생" src="resource/동시성 발생.png"/>
-
-- 서비스 로직 테스트 시 100개의 재고보다 과도하게 판매되는 상황 발생
-
-문제 해결 방법 모색
-
-Lock을 구현해서 해결해야 했고, 아래의 락들을 간단하게 구현하고 테스트 해봤습니다.
-
-- 자바 어플리케이션 수준의 락
-- 데이터 베이스 수준의 락
-- 분산 시스템 수준의 락
-
-<b> 결론 </b>
-
-- 현재 프로젝트는 분리된 여러 서비스들이 서로 상호작용하며 데이터의 일관성과 무결성을 유지해야하며 DB에 대한 부하도 줄여야함 -> 분산 락이 제일 적합할 것으로 판단
-- Redis와 Zookeeper중 Zookeeper는 데이터 지속성이 있으나 설정과 운영이 복잡해질 수 있고 Redis의 경우 성능적으로 더 빠르며 초기 설정이 단순하고 운영의 복잡성을 줄일 수 있어  Redis의 Redisson을 이용해 분산 락 구현
-
-- jmeter 500개 쓰레드로 한번에 요청한 결과
-  <img alt="동시성 해결 재고 채우기" src="resource/동시성 해결 재고 채우기.png"/>
-  <img alt="동시성 해결 jmeter" src="resource/동시성 해결 jmeter.png"/>
-  <img alt="동시성 해결 재고 결과" src="resource/동시성 해결 재고 결과.png"/>
-  <img alt="동시성 해결 주문" src="resource/동시성 해결 주문.png"/>
-
-[자세한 내용 보기](https://velog.io/@malslapq/%EB%AC%BC%EA%B1%B4%EC%9D%B4-%EC%97%86%EB%8A%94%EB%8D%B0-%ED%8C%94%EB%A0%A4%EB%B2%84%EB%A0%B8%EB%8B%A4...-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%9D%B4%EC%8A%88)
+[동시성 이슈](https://velog.io/@malslapq/%EB%AC%BC%EA%B1%B4%EC%9D%B4-%EC%97%86%EB%8A%94%EB%8D%B0-%ED%8C%94%EB%A0%A4%EB%B2%84%EB%A0%B8%EB%8B%A4...-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%9D%B4%EC%8A%88)
