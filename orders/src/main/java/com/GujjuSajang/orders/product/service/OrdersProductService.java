@@ -23,9 +23,8 @@ public class OrdersProductService {
     private final OrdersRepository ordersRepository;
     private final OrdersProductRepository ordersProductRepository;
 
-
     // 주문 내역 상세 조회
-    @Transactional
+    @Transactional(readOnly = true)
     public List<OrdersProductDto> getOrderProducts(Long memberId, Long orderId) {
 
         Orders orders = ordersRepository.findById(orderId).orElseThrow(() -> new OrdersException(ErrorCode.NOT_FOUND_ORDERS));
