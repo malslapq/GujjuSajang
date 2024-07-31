@@ -2,13 +2,12 @@ package com.GujjuSajang.orders.product.entity;
 
 import com.GujjuSajang.core.dto.CartProductsDto;
 import com.GujjuSajang.core.type.DeliveryStatus;
+import com.GujjuSajang.orders.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class OrdersProduct {
+public class OrdersProduct extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,10 +36,6 @@ public class OrdersProduct {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private DeliveryStatus status;
-    @CreatedDate
-    private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updateAt;
 
     public static OrdersProduct of(Long orderId, CartProductsDto cartProductsDto, DeliveryStatus deliveryStatus) {
         return OrdersProduct.builder()
